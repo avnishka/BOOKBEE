@@ -7,7 +7,7 @@
 <style>
     /* --- PAGE LAYOUT --- */
     .profile-wrapper {
-        max-width: 800px; /* Made wider so side-by-side fits better */
+        max-width: 800px;
         margin: 40px auto;
         padding: 0 20px;
     }
@@ -20,20 +20,19 @@
         text-decoration: none;
     }
 
-    /* --- PROFILE CARD (White Box) --- */
+    /* --- PROFILE CARD --- */
     .profile-card {
         background: white;
         padding: 30px;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        display: flex;          /* Places Avatar LEFT and Details RIGHT */
-        align-items: center;    /* Vertically centers them */
-        gap: 30px;              /* Space between Avatar and Text */
+        display: flex;
+        align-items: center;
+        gap: 30px;
         margin-bottom: 40px;
         position: relative;
     }
 
-    /* Left Side: Avatar */
     .profile-left {
         flex-shrink: 0;
         text-align: center;
@@ -49,12 +48,6 @@
         margin: 0 auto;
     }
 
-    .profile-pic {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
     .choose-btn {
         display: block;
         margin-top: 10px;
@@ -64,9 +57,9 @@
         text-decoration: underline;
     }
 
-    /* Avatar Popup Grid */
+    /* Avatar Grid */
     .avatar-grid {
-        display: none; /* Hidden by default */
+        display: none;
         position: absolute;
         top: 100%;
         left: 20px;
@@ -95,17 +88,9 @@
         border-color: #FFC83D;
     }
 
-    /* Right Side: User Details */
-    .profile-details h2 {
-        margin: 0 0 5px 0;
-        color: #4A2C1A;
-        font-size: 1.8rem;
-    }
-    
-    .profile-details p {
-        margin: 5px 0;
-        color: #666;
-    }
+    /* User Details */
+    .profile-details h2 { margin: 0 0 5px 0; color: #4A2C1A; font-size: 1.8rem; }
+    .profile-details p { margin: 5px 0; color: #666; }
 
     .edit-btn {
         margin-top: 15px;
@@ -116,9 +101,11 @@
         border-radius: 20px;
         font-weight: bold;
         cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
     }
 
-    /* --- REVIEWS & HISTORY SECTIONS --- */
+    /* --- SECTIONS --- */
     .section-title {
         color: #4A2C1A;
         margin-bottom: 20px;
@@ -142,11 +129,10 @@
     <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
 
     <div class="profile-card">
-        
         <div class="profile-left">
             <div class="profile-pic-container">
                 {% if user_profile.avatar %}
-                    <img src="{% static user_profile.avatar %}" class="profile-pic">
+                    <img src="{% static user_profile.avatar %}" class="profile-pic" style="width:100%; height:100%; object-fit:cover;">
                 {% else %}
                     <div style="width:100%; height:100%; background:#FFC83D; display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#4A2C1A; font-weight:bold;">
                         {{ user.username|slice:":2"|upper }}
@@ -168,46 +154,54 @@
             </div>
         </div>
 
-        <div>
-                <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-                <p>@{{ user.username }}</p>
-                <p>📧 {{ user.email }}</p>
-
-                {% if user.location %}
-                <p>📍 {{ user.location }}</p>
-                {% endif %}
-
-                <a href="{% url 'edit_profile' %}">
-                    <button class="edit-btn">Edit Profile</button>
-                </a>
-            </div>
-
+        <div class="profile-details">
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p>@{{ user.username }}</p>
+            <p>📧 {{ user.email }}</p>
+            {% if user.location %}<p>📍 {{ user.location }}</p>{% endif %}
+            
+            <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+        </div>
     </div>
-    <div>
-        <h3 class="section-title">Reviews on your Books</h3>
-        {% if received_reviews %}
-            {% for review in received_reviews %}
-            <div class="info-card">
-                <strong>{{ review.book.title }}</strong>
-                <span style="color:#F59E0B">
-                    {% if review.rating >= 4 %}⭐⭐⭐⭐⭐{% else %}⭐⭐⭐{% endif %}
-                </span>
-                <p>"{{ review.comment }}"</p>
+
+    <div style="margin-top: 40px; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3 class="section-title" style="margin: 0;">Community Trust 🤝</h3>
+            
+            <div style="background: #E8F5E9; color: #2E7D32; padding: 8px 16px; border-radius: 20px; font-weight: bold; border: 1px solid #C8E6C9;">
+                Trust Score: {{ total_score }} 🛡️
             </div>
-            {% endfor %}
+        </div>
+
+        {% if user_credits %}
+            <div style="display: grid; gap: 15px;">
+                {% for credit in user_credits %}
+                <div class="info-card" style="border-left: 5px solid #FFC83D; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <strong style="color: #4A2C1A;">@{{ credit.giver.username }}</strong>
+                        <span style="font-size: 0.85rem; color: #999;">{{ credit.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    {% if credit.message %}
+                    <p style="color: #555; margin: 8px 0; font-style: italic;">"{{ credit.message }}"</p>
+                    {% endif %}
+                    <div style="font-size: 0.9rem; color: #2E7D32; font-weight: 600; margin-top: 5px;">
+                        +{{ credit.score }} Credit Point
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         {% else %}
-            <p style="color:#888; font-style:italic;">No reviews yet.</p>
+            <div style="text-align: center; padding: 40px; background: rgba(255, 255, 255, 0.5); border-radius: 16px; border: 2px dashed #d4b996;">
+                <p style="color: #795548; font-weight: 600; margin-bottom: 5px;">No credits yet.</p>
+                <p style="font-size: 0.9rem; color: #8D6E63;">Lend or borrow books to earn trust points from others!</p>
+            </div>
         {% endif %}
     </div>
 
     <div style="margin-top: 40px;">
         <h3 class="section-title">Book History</h3>
         
-        <div style="background:#eee; display:inline-flex; border-radius:20px; padding:5px; margin-bottom:20px;">
-            <div style="background:#4A2C1A; color:white; padding:8px 20px; border-radius:15px; font-weight:bold;">My Books (Lent)</div>
-            <div style="padding:8px 20px; color:#666;">Borrowed</div>
-        </div>
-
+        <h4 style="color:#4A2C1A; margin-bottom:10px;">📚 My Books (Lent/Selling)</h4>
         {% if lent_books %}
             {% for book in lent_books %}
             <div class="info-card" style="display:flex; justify-content:space-between; align-items:center;">
@@ -219,11 +213,43 @@
             </div>
             {% endfor %}
         {% else %}
-            <div class="info-card">You haven't added any books yet.</div>
+            <p style="color:#888; font-style:italic; margin-bottom:20px;">You haven't uploaded any books.</p>
+        {% endif %}
+
+        <h4 style="color:#4A2C1A; margin-top:30px; margin-bottom:10px;">🛍️ Books I Borrowed</h4>
+        {% if borrowed_orders %}
+            {% for order in borrowed_orders %}
+            <div class="info-card" style="border-left: 5px solid #2E7D32;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="margin:0;">{{ order.book.title }}</h4>
+                        <p style="margin:5px 0 0; font-size:0.9rem; color:#666;">
+                            Seller: 
+                            <a href="{% url 'public_profile' order.seller.username %}" 
+                               style="color:#2E7D32; font-weight:bold; text-decoration:underline;">
+                                @{{ order.seller.username }}
+                            </a>
+                        </p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="display:block; font-size:0.8rem; color:#999;">{{ order.created_at|date:"M d, Y" }}</span>
+                        
+                        <a href="{% url 'public_profile' order.seller.username %}" 
+                           style="display:inline-block; margin-top:5px; background:#2E7D32; color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; text-decoration:none;">
+                           Rate Seller 🛡️
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="info-card" style="background:#f9f9f9; color:#888; text-align:center;">
+                You haven't borrowed any books yet.
+            </div>
         {% endif %}
     </div>
 
-</div>
+</div>  
 
 <script>
     function togglePicker() {

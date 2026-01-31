@@ -21,6 +21,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('user/<str:username>/', views.public_profile, name='public_profile'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -40,3 +40,22 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+class UserCredit(models.Model):
+    giver = models.ForeignKey(User, related_name='credits_given', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='credits_received', on_delete=models.CASCADE)
+    score = models.IntegerField(default=1) # e.g., +1 for a good interaction
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.giver.username} -> {self.receiver.username}"
+    
+class Order(models.Model):
+    buyer = models.ForeignKey(User, related_name='purchases', on_delete=models.CASCADE)
+    seller = models.ForeignKey(User, related_name='sales', on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.buyer.username} bought {self.book.title} from {self.seller.username}"

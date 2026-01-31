@@ -5,7 +5,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm 
 from .forms import BookForm, EditProfileForm 
-from .models import Book, Review, Cart , UserProfile
+from .models import Book, Review, Cart , UserProfile, UserCredit ,Order
+from django.db.models import Q  
 
 
 def signup_view(request):
@@ -177,53 +178,165 @@ def checkout(request):
 @login_required(login_url='login')
 def payment_success(request):
     cart = Cart.objects.get(user=request.user)
-    cart.items.clear() # Empty the cart
+    
+    # Loop through cart items and save an Order for each
+    for book in cart.items.all():
+        Order.objects.create(
+            buyer=request.user,
+            seller=book.owner,
+            book=book
+        )
+        
+        # Optional: Mark book as sold/lended
+        book.status = 'LENDED' if book.transaction_type == 'rent' else 'SOLD'
+        book.save()
+
+    cart.items.clear() # Now clear the cart
     messages.success(request, "Payment Successful! Order Placed. 🐝")
     return redirect('home')
 
 @login_required(login_url='login')
 def profile(request):
-
-    # 1. Get or Create UserProfile
+    # 1. User Profile & Avatar Setup (Keep existing)
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-    # 2. Define available avatars (must match filenames in static/images/)
     available_avatars = ['av1.png', 'av2.png', 'av3.png', 'av4.png', 'av5.png']
 
+    # 2. Handle Avatar POST (Keep existing)
     if request.method == 'POST':
-        print("--- POST REQUEST RECEIVED ---") # Debug print 1
-        
-        # Check if the avatar selection data was sent
         if 'selected_avatar' in request.POST:
             avatar_filename = request.POST.get('selected_avatar')
-            print(f"Selected Avatar: {avatar_filename}") # Debug print 2
-            
-            # 3. Update the database field
-            # We save the path relative to the static folder
-            new_path = f"images/{avatar_filename}"
-            user_profile.avatar = new_path
+            user_profile.avatar = f"images/{avatar_filename}"
             user_profile.save()
-            print(f"Saved to DB: {new_path}") # Debug print 3
-            
-            # Force a redirect to refresh the page content
             return redirect('profile')
-        else:
-            print("No 'selected_avatar' found in POST data")
 
-    # ... (rest of your context and render code) ...
+    # 3. Fetch Data
+    # Credits (Keep existing)
+    user_credits = UserCredit.objects.filter(receiver=request.user).order_by('-created_at')
+    total_score = sum(c.score for c in user_credits)
+    
+    # Books I LENT (My Books)
     lent_books = Book.objects.filter(owner=request.user)
-    received_reviews = Review.objects.filter(book__owner=request.user)
+
+    # --- NEW: Books I BORROWED (My Orders) ---
+    borrowed_orders = Order.objects.filter(buyer=request.user).order_by('-created_at')
 
     context = {
         'user_profile': user_profile,
         'lent_books': lent_books,
-        'received_reviews': received_reviews,
+        'borrowed_orders': borrowed_orders, # <--- Pass this to HTML
         'available_avatars': available_avatars,
+        'user_credits': user_credits,
+        'total_score': total_score,
     }
     return render(request, 'profile.html', context)
-
 @login_required(login_url='login')
 def edit_profile(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully ✨")
+            return redirect('profile')
+
+        # IMPORTANT: render immediately if invalid
+        return render(request, 'edit_profile.html', {'form': form})
+
+    form = EditProfileForm(instance=request.user)
+    return render(request, 'edit_profile.html', {'form': form})
+
+@login_required(login_url='login')
+def public_profile(request, username):
+    # 1. Get the user we want to view
+    profile_user = get_object_or_404(User, username=username)
+    
+    # Redirect to own profile if viewing yourself
+    if profile_user == request.user:
+        return redirect('profile')
+
+    user_profile, created = UserProfile.objects.get_or_create(user=profile_user)
+
+    # 2. Check for Interaction: (I bought from them) OR (They bought from me)
+    has_interacted = Order.objects.filter(
+        (Q(buyer=request.user) & Q(seller=profile_user)) | 
+        (Q(buyer=profile_user) & Q(seller=request.user))
+    ).exists()
+
+    # 3. Handle "Give Credit" Action
+    if request.method == 'POST':
+        if has_interacted:
+            message = request.POST.get('message')
+            UserCredit.objects.create(
+                giver=request.user,
+                receiver=profile_user,
+                score=1,
+                message=message
+            )
+            messages.success(request, f"Trust Point sent to {profile_user.username}! 🛡️")
+        else:
+            messages.error(request, "You must transact with this user first.")
+            
+        return redirect('public_profile', username=username)
+
+    # 4. Fetch their stats
+    user_credits = UserCredit.objects.filter(receiver=profile_user).order_by('-created_at')
+    total_score = sum(c.score for c in user_credits)
+    lent_books = Book.objects.filter(owner=profile_user, status='AVAILABLE')
+
+    context = {
+        'profile_user': profile_user,
+        'user_profile': user_profile,
+        'user_credits': user_credits,
+        'total_score': total_score,
+        'lent_books': lent_books,
+        'has_interacted': has_interacted,
+    }
+    return render(request, 'public_profile.html', context)
+    # 1. Get the user we want to view
+    profile_user = get_object_or_404(User, username=username)
+    
+    # Redirect to own profile if viewing yourself
+    if profile_user == request.user:
+        return redirect('profile')
+
+    user_profile, created = UserProfile.objects.get_or_create(user=profile_user)
+
+    # 2. Check for Interaction: (I bought from them) OR (They bought from me)
+    has_interacted = Order.objects.filter(
+        (Q(buyer=request.user) & Q(seller=profile_user)) | 
+        (Q(buyer=profile_user) & Q(seller=request.user))
+    ).exists()
+
+    # 3. Handle "Give Credit" Action
+    if request.method == 'POST':
+        if has_interacted:
+            message = request.POST.get('message')
+            UserCredit.objects.create(
+                giver=request.user,
+                receiver=profile_user,
+                score=1,
+                message=message
+            )
+            messages.success(request, f"Trust Point sent to {profile_user.username}! 🛡️")
+        else:
+            messages.error(request, "You must transact with this user first.")
+            
+        return redirect('public_profile', username=username)
+
+    # 4. Fetch their stats
+    user_credits = UserCredit.objects.filter(receiver=profile_user).order_by('-created_at')
+    total_score = sum(c.score for c in user_credits)
+    lent_books = Book.objects.filter(owner=profile_user, status='AVAILABLE')
+
+    context = {
+        'profile_user': profile_user,
+        'user_profile': user_profile,
+        'user_credits': user_credits,
+        'total_score': total_score,
+        'lent_books': lent_books,
+        'has_interacted': has_interacted,
+    }
+    return render(request, 'public_profile.html', context)
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
 
