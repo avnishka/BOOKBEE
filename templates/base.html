@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookBee 🐝</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+    {% if user.is_authenticated %}
+    <nav class="navbar">
+        <div class="logo">BookBee 🐝</div>
+
+        <div class="search-bar-container">
+            <input type="text" placeholder="Search books by name, author...">
+            <select>
+                <option>Sort by Price</option>
+            </select>
+            <select>
+                <option>Location</option>
+            </select>
+            <button class="search-btn">Search</button>
+        </div>
+
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+
+            <a href="{% url 'profile' %}">Profile</a>
+
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="banner">
+        📚 Free Books Available – Borrow Knowledge, Not Cost!
+    </div>
+    {% endif %}
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>BookBee – A community-driven book sharing platform 🌿<br>
+            Share books • Save money • Spread knowledge</p>
+    </footer>
+
+</body>
+
+</html>

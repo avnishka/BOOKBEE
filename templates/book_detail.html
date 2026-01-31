@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ book.title }} | BookBee{% endblock %}
+
+{% block content %}
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        display: flex;
+        gap: 50px;
+        border-top: 5px solid #FFC83D;
+        /* Honey Yellow */
+    }
+
+    /* Left: Image */
+    .book-image-section {
+        flex: 1;
+        max-width: 350px;
+    }
+
+    .book-image-section img {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        border: 4px solid #FFF8E7;
+        /* Cream Border */
+    }
+
+    /* Right: Info */
+    .book-info-section {
+        flex: 2;
+    }
+
+    .book-title {
+        font-size: 2.5rem;
+        color: #1F2937;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .status-available {
+        background: #E6F4EA;
+        color: #2E7D32;
+    }
+
+    .status-lended {
+        background: #FEF2F2;
+        color: #D93025;
+    }
+
+    .price-tag {
+        font-size: 2rem;
+        color: #2E7D32;
+        /* Forest Green */
+        font-weight: 800;
+        margin: 10px 0;
+    }
+
+    .meta-info {
+        background: #FFF8E7;
+        /* Light Cream */
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        color: #5a4634;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .btn-cart {
+        background-color: #FFC83D;
+        /* Honey Yellow */
+        color: #4A2C1A;
+        padding: 15px 40px;
+        border: none;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .btn-cart:hover {
+        background-color: #ffb700;
+        transform: translateY(-2px);
+    }
+
+    /* Reviews */
+    .reviews-section {
+        margin-top: 40px;
+        border-top: 2px solid #f3f3f3;
+        padding-top: 20px;
+    }
+
+    .review-card {
+        background: #F9FAFB;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        border-left: 4px solid #FFC83D;
+    }
+</style>
+
+<div class="detail-container">
+    <div class="book-image-section">
+        {% if book.image %}
+        <img src="{{ book.image.url }}" alt="{{ book.title }}">
+        {% else %}
+        <img src="https://via.placeholder.com/350x500?text=No+Cover" alt="No Image">
+        {% endif %}
+    </div>
+
+    <div class="book-info-section">
+        <h1 class="book-title">{{ book.title }}</h1>
+
+        <span
+            class="status-badge {% if book.status == 'AVAILABLE' %}status-available{% else %}status-lended{% endif %}">
+            {% if book.status == 'AVAILABLE' %}✅ Available Now{% else %}❌ Currently Lended{% endif %}
+        </span>
+
+        <div class="price-tag">₹{{ book.price }}</div>
+
+        <div class="meta-info">
+            <span>📍 <strong>Location:</strong> {{ book.location }}</span>
+            <span>👤 <strong>Owner:</strong> {{ book.owner.username }}</span>
+            <span>💳 <strong>Security:</strong> ₹{{ book.security_amount }}</span>
+            <span>🔄 <strong>Type:</strong> {{ book.get_transaction_type_display }}</span>
+        </div>
+
+        <h3>Description</h3>
+        <p style="color: #4B5563; line-height: 1.6;">{{ book.description|default:"No description provided." }}</p>
+
+        {% if book.status == 'AVAILABLE' %}
+        <a href="{% url 'add_to_cart' book.pk %}" class="btn-cart">🛒 Add to Cart</a>
+        {% else %}
+        <button class="btn-cart" style="background: #ccc; cursor: not-allowed;">Unavailable</button>
+        {% endif %}
+
+        <div class="reviews-section">
+            <h3>Reviews ({{ avg_rating|floatformat:1 }} / 5.0)</h3>
+            {% for review in reviews %}
+            <div class="review-card">
+                <strong>{{ review.author.username }}</strong>
+                <span style="color: #F59E0B;">{% if review.rating >= 4 %}⭐⭐⭐⭐⭐{% else %}⭐⭐⭐{% endif %}</span>
+                <p style="margin-top: 5px; color: #555;">"{{ review.comment }}"</p>
+            </div>
+            {% empty %}
+            <p style="color: #888;">No reviews yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

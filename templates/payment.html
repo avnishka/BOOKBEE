@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Pay with UPI | BookBee{% endblock %}
+{% block content %}
+<style>
+    .pay-container {
+        max-width: 450px;
+        margin: 50px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid #2E7D32;
+    }
+
+    .amount-display {
+        background: #E8F5E9;
+        color: #2E7D32;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 20px 0;
+    }
+
+    .qr-box {
+        border: 2px dashed #ccc;
+        padding: 10px;
+        display: inline-block;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+
+    .btn-confirm {
+        width: 100%;
+        padding: 15px;
+        background: #F59E0B;
+        border: none;
+        border-radius: 30px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        color: #4A2C1A;
+    }
+
+    .btn-confirm:hover {
+        background: #D97706;
+    }
+</style>
+
+<div class="pay-container">
+    <h2>Scan & Pay 📲</h2>
+    <p>Use GPay, PhonePe, or Paytm</p>
+
+    <div class="amount-display">₹{{ total_price }}</div>
+
+    <div class="qr-box">
+        <img src="{{ qr_code_url }}" alt="UPI QR Code" width="200" height="200">
+    </div>
+
+    <p style="font-size: 0.9rem; color: #555; margin-bottom: 20px;">
+        Paying to: <strong>BookBee Store</strong><br>
+        <span style="font-size: 0.8rem; color: #999;">Merchant ID: bookbee.merchant@upi</span>
+    </p>
+
+    <a href="{{ upi_link }}"
+        style="display: block; margin-bottom: 20px; color: #2E7D32; font-weight: bold; text-decoration: none;">
+        👉 Click here to pay on mobile
+    </a>
+
+    <form action="{% url 'payment_success' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm">✅ I have made the payment</button>
+    </form>
+</div>
+{% endblock %}
