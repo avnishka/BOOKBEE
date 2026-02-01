@@ -22,6 +22,9 @@ urlpatterns = [
     path('payment-success/', views.payment_success, name='payment_success'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('chat/', include('chat.urls')),
+    path('user/<str:username>/', views.public_profile, name='public_profile'),
+    path('delete-book/<int:pk>/', views.delete_book, name='delete_book'),
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

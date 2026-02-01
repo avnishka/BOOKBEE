@@ -7,7 +7,7 @@
 <style>
     /* --- PAGE LAYOUT --- */
     .profile-wrapper {
-        max-width: 800px; /* Made wider so side-by-side fits better */
+        max-width: 850px;
         margin: 40px auto;
         padding: 0 20px;
     }
@@ -18,123 +18,122 @@
         color: #4A2C1A;
         font-weight: bold;
         text-decoration: none;
+        transition: 0.2s;
     }
+    .back-link:hover { color: #FFC83D; }
 
-    /* --- PROFILE CARD (White Box) --- */
+    /* --- PROFILE HEADER CARD --- */
     .profile-card {
         background: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        display: flex;          /* Places Avatar LEFT and Details RIGHT */
-        align-items: center;    /* Vertically centers them */
-        gap: 30px;              /* Space between Avatar and Text */
+        padding: 35px;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        gap: 35px;
         margin-bottom: 40px;
-        position: relative;
+        position: relative; 
     }
 
-    /* Left Side: Avatar */
-    .profile-left {
-        flex-shrink: 0;
-        text-align: center;
-        width: 140px;
-    }
-
+    /* --- FIXED AVATAR CONTAINER --- */
     .profile-pic-container {
-        width: 120px;
-        height: 120px;
+        width: 130px;
+        height: 130px;
         border-radius: 50%;
         border: 4px solid #FFC83D;
-        overflow: hidden;
         margin: 0 auto;
+        position: relative; 
+        overflow: visible;
     }
 
-    .profile-pic {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .choose-btn {
-        display: block;
-        margin-top: 10px;
-        font-size: 0.85rem;
-        color: #666;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-
-    /* Avatar Popup Grid */
+    /* --- AVATAR PICKER POPUP --- */
     .avatar-grid {
-        display: none; /* Hidden by default */
+        display: none; 
         position: absolute;
-        top: 100%;
-        left: 20px;
+        top: 150px; 
+        left: 50%;
+        transform: translateX(-50%);
         background: white;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        z-index: 100;
-        width: 200px;
+        border: 1px solid #eee;
+        padding: 15px;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 9999;
+        width: 230px;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 10px;
         justify-content: center;
     }
-    
+
+    .avatar-grid::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 0 10px 10px 10px;
+        border-style: solid;
+        border-color: transparent transparent white transparent;
+    }
+
     .avatar-option {
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
         cursor: pointer;
         transition: 0.2s;
         border: 2px solid transparent;
     }
-    .avatar-option:hover {
-        transform: scale(1.1);
-        border-color: #FFC83D;
-    }
+    .avatar-option:hover { transform: scale(1.1); border-color: #FFC83D; }
 
-    /* Right Side: User Details */
-    .profile-details h2 {
-        margin: 0 0 5px 0;
-        color: #4A2C1A;
-        font-size: 1.8rem;
-    }
-    
-    .profile-details p {
-        margin: 5px 0;
+    /* --- TEXT STYLES --- */
+    .choose-btn {
+        display: block;
+        margin-top: 12px;
+        font-size: 0.9rem;
         color: #666;
+        cursor: pointer;
+        font-weight: 600;
+        text-align: center;
+        white-space: nowrap;
+        background: none;
+        border: none;
     }
+    .choose-btn:hover { color: #2E7D32; text-decoration: underline; }
+
+    .profile-details h2 { margin: 0 0 8px 0; color: #4A2C1A; font-size: 2rem; letter-spacing: -0.5px; }
+    .profile-details p { margin: 5px 0; color: #777; font-size: 0.95rem; }
 
     .edit-btn {
-        margin-top: 15px;
-        padding: 8px 20px;
-        background: #D4B996;
+        margin-top: 20px;
+        padding: 10px 25px;
+        background: #F5F5F5;
         color: #4A2C1A;
         border: none;
-        border-radius: 20px;
-        font-weight: bold;
+        border-radius: 30px;
+        font-weight: 700;
         cursor: pointer;
-    }
-
-    /* --- REVIEWS & HISTORY SECTIONS --- */
-    .section-title {
-        color: #4A2C1A;
-        margin-bottom: 20px;
-        font-size: 1.3rem;
-        border-bottom: 2px solid #FFC83D;
+        text-decoration: none;
         display: inline-block;
-        padding-bottom: 5px;
+        transition: 0.2s;
     }
+    .edit-btn:hover { background: #FFC83D; color: white; }
 
-    .info-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-    }
+    /* --- TABS --- */
+    .history-section { margin-top: 50px; }
+    .tabs-header { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+    .tab-btn { padding: 12px 30px; border-radius: 30px; border: none; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; background: #F0F2F5; color: #666; }
+    .tab-btn.active { background: #2E3A46; color: white; box-shadow: 0 4px 12px rgba(46, 58, 70, 0.3); transform: scale(1.05); }
+    .tab-content { display: none; animation: fadeIn 0.4s ease; }
+    .tab-content.active-content { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .history-card { background: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+    .history-card:hover { border-color: #FFC83D; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .status-pill { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 10px; text-transform: uppercase; }
+    .st-available { background: #E8F5E9; color: #2E7D32; }
+    .st-lended { background: #FFF3E0; color: #F57C00; }
+    .st-sold { background: #FFEBEE; color: #C62828; }
 </style>
 
 <div class="profile-wrapper">
@@ -142,97 +141,148 @@
     <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
 
     <div class="profile-card">
-        
-        <div class="profile-left">
+        <div style="flex-shrink: 0; text-align: center;">
             <div class="profile-pic-container">
                 {% if user_profile.avatar %}
-                    <img src="{% static user_profile.avatar %}" class="profile-pic">
+                    <img src="{% static user_profile.avatar %}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
                 {% else %}
-                    <div style="width:100%; height:100%; background:#FFC83D; display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#4A2C1A; font-weight:bold;">
-                        {{ user.username|slice:":2"|upper }}
-                    </div>
+                    <div style="width:100%; height:100%; background:#FFC83D; display:flex; align-items:center; justify-content:center; font-size:3rem; border-radius:50%;">🐝</div>
                 {% endif %}
-            </div>
-
-            <span class="choose-btn" onclick="togglePicker()">Choose avatar ▾</span>
-
-            <div id="avatarPicker" class="avatar-grid">
-                <form method="POST">
-                    {% csrf_token %}
-                    {% for avatar_name in available_avatars %}
-                    <button type="submit" name="selected_avatar" value="{{ avatar_name }}" style="border:none; background:none; padding:0;">
-                        <img src="{% static 'images/'|add:avatar_name %}" class="avatar-option" title="{{ avatar_name }}">
-                    </button>
-                    {% endfor %}
-                </form>
-            </div>
-        </div>
-
-        <div>
-                <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-                <p>@{{ user.username }}</p>
-                <p>📧 {{ user.email }}</p>
-
-                {% if user.location %}
-                <p>📍 {{ user.location }}</p>
-                {% endif %}
-
-                <a href="{% url 'edit_profile' %}">
-                    <button class="edit-btn">Edit Profile</button>
-                </a>
-            </div>
-
-    </div>
-    <div>
-        <h3 class="section-title">Reviews on your Books</h3>
-        {% if received_reviews %}
-            {% for review in received_reviews %}
-            <div class="info-card">
-                <strong>{{ review.book.title }}</strong>
-                <span style="color:#F59E0B">
-                    {% if review.rating >= 4 %}⭐⭐⭐⭐⭐{% else %}⭐⭐⭐{% endif %}
-                </span>
-                <p>"{{ review.comment }}"</p>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="color:#888; font-style:italic;">No reviews yet.</p>
-        {% endif %}
-    </div>
-
-    <div style="margin-top: 40px;">
-        <h3 class="section-title">Book History</h3>
-        
-        <div style="background:#eee; display:inline-flex; border-radius:20px; padding:5px; margin-bottom:20px;">
-            <div style="background:#4A2C1A; color:white; padding:8px 20px; border-radius:15px; font-weight:bold;">My Books (Lent)</div>
-            <div style="padding:8px 20px; color:#666;">Borrowed</div>
-        </div>
-
-        {% if lent_books %}
-            {% for book in lent_books %}
-            <div class="info-card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h4 style="margin:0;">{{ book.title }}</h4>
-                    <span style="color:green; font-size:0.9rem;">Status: {{ book.status }}</span>
+                
+                <div id="avatarPicker" class="avatar-grid">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% for avatar_name in available_avatars %}
+                        <button type="submit" name="selected_avatar" value="{{ avatar_name }}" style="border:none; background:none; padding:0; cursor:pointer;">
+                            <img src="{% static 'images/'|add:avatar_name %}" class="avatar-option">
+                        </button>
+                        {% endfor %}
+                    </form>
                 </div>
-                <div style="font-weight:bold; color:#4A2C1A;">₹{{ book.price }}</div>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="info-card">You haven't added any books yet.</div>
-        {% endif %}
+            <button class="choose-btn" onclick="togglePicker()">Edit Avatar ✎</button>
+        </div>
+
+        <div class="profile-details">
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p>@{{ user.username }} • 📧 {{ user.email }}</p>
+            <div style="margin-top: 15px;">
+                <span style="background: #E8F5E9; color: #2E7D32; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+                    🛡️ Trust Score: {{ total_score }}
+                </span>
+            </div>
+            <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+        </div>
     </div>
 
+    <div class="history-section">
+        
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="openTab(event, 'listings')">Lending</button>
+            <button class="tab-btn" onclick="openTab(event, 'borrowed')">Borrowed</button>
+            <button class="tab-btn" onclick="openTab(event, 'history')">History</button>
+        </div>
+
+        <div id="listings" class="tab-content active-content">
+            {% if my_listings %}
+                {% for book in my_listings %}
+                <div class="history-card">
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem; color: #333;">{{ book.title }}</h4>
+                        <span class="status-pill {% if book.status == 'AVAILABLE' %}st-available{% else %}st-lended{% endif %}">
+                            {% if book.status == 'LENDED' %}Lent Out{% else %}{{ book.status }}{% endif %}
+                        </span>
+                    </div>
+                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                        <div style="font-weight: 800; color: #4A2C1A; font-size: 1.1rem;">₹{{ book.price }}</div>
+                        
+                        {% if book.status == 'AVAILABLE' %}
+                            <form action="{% url 'delete_book' book.pk %}" method="POST" onsubmit="return confirm('Are you sure you want to stop lending this book?');">
+                                {% csrf_token %}
+                                <button type="submit" style="background: #FFEBEE; color: #C62828; border: none; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        {% else %}
+                            <div style="font-size: 0.8rem; color: #999;">Currently Lent</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 50px; background: #F9F9F9; border-radius: 16px;">
+                    <p style="color: #888;">You are not lending any books.</p>
+                    <a href="{% url 'add_book' %}" style="color: #2E7D32; font-weight: bold;">+ Lend a Book</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div id="borrowed" class="tab-content">
+            {% if borrowed_books %}
+                {% for order in borrowed_books %}
+                <div class="history-card" style="border-left: 5px solid #FFC83D;">
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem; color: #333;">{{ order.book.title }}</h4>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                            Borrowed from: <a href="{% url 'public_profile' order.seller.username %}" style="color: #2E7D32; font-weight: bold;">@{{ order.seller.username }}</a>
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <a href="{% url 'public_profile' order.seller.username %}" style="background: #2E7D32; color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; font-weight: bold;">Rate Owner 🛡️</a>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 8px;">{{ order.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 50px; background: #F9F9F9; border-radius: 16px;">
+                    <p style="color: #888;">You haven't borrowed any books.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div id="history" class="tab-content">
+            {% if purchased_books %}
+                {% for order in purchased_books %}
+                <div class="history-card" style="border-left: 5px solid #2E7D32;">
+                    <div>
+                        <h4 style="margin: 0 0 5px 0; font-size: 1.1rem; color: #333;">{{ order.book.title }}</h4>
+                        <span class="status-pill st-sold">PURCHASED</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">Seller: @{{ order.seller.username }}</div>
+                        <div style="font-size: 0.8rem; color: #999;">{{ order.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 50px; background: #F9F9F9; border-radius: 16px;">
+                    <p style="color: #888;">You haven't bought any books yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
 </div>
 
 <script>
     function togglePicker() {
         var picker = document.getElementById('avatarPicker');
-        if (picker.style.display === 'flex') {
-            picker.style.display = 'none';
-        } else {
-            picker.style.display = 'flex';
+        picker.style.display = (picker.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function openTab(evt, tabName) {
+        var tabContent = document.getElementsByClassName("tab-content");
+        for (var i = 0; i < tabContent.length; i++) {
+            tabContent[i].style.display = "none";
+            tabContent[i].classList.remove("active-content");
         }
+        var tabLinks = document.getElementsByClassName("tab-btn");
+        for (var i = 0; i < tabLinks.length; i++) {
+            tabLinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        document.getElementById(tabName).classList.add("active-content");
+        evt.currentTarget.classList.add("active");
     }
 </script>
 

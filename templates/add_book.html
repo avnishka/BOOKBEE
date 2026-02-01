@@ -1,106 +1,24 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Lend a Book | BookBee</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #FFF8E7, #FFE08A);
-        }
-
-        .navbar {
-            background-color: #FFC83D;
-            padding: 15px 40px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar h1 {
-            margin: 0;
-            color: #4A2C1A;
-        }
-
-        .form-container {
-            max-width: 500px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px 35px;
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
-        }
-
-        .form-container h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #4A2C1A;
-        }
-
-        label {
-            font-weight: 600;
-            color: #5a4634;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px 12px;
-            margin-bottom: 18px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            box-sizing: border-box;
-            /* Fixes padding issues */
-        }
-
-        /* Location Wrapper for the Button */
-        .location-wrapper {
-            position: relative;
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-        }
-
-        .detect-btn {
-            width: auto;
-            padding: 10px 15px;
-            background: #2E7D32;
-            color: white;
-            font-size: 12px;
-            margin-top: 0;
-            /* Align with input */
-            height: 42px;
-            /* Match input height */
-        }
-
-        .detect-btn:hover {
-            background: #1B5E20;
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 12px;
-            background-color: #FFC83D;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #4A2C1A;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #ffb700;
-        }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #FFF8E7, #FFE08A); }
+        .navbar { background-color: #FFC83D; padding: 15px 40px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        .navbar h1 { margin: 0; color: #4A2C1A; }
+        .form-container { max-width: 500px; margin: 40px auto; background: white; padding: 30px 35px; border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08); }
+        .form-container h2 { text-align: center; margin-bottom: 25px; color: #4A2C1A; }
+        label { font-weight: 600; color: #5a4634; display: block; margin-bottom: 6px; }
+        input, select, textarea { width: 100%; padding: 10px 12px; margin-bottom: 18px; border-radius: 10px; border: 1px solid #ddd; font-size: 14px; box-sizing: border-box; }
+        .location-wrapper { position: relative; display: flex; gap: 10px; align-items: flex-start; }
+        .detect-btn { width: auto; padding: 10px 15px; background: #2E7D32; color: white; font-size: 12px; margin-top: 0; height: 42px; }
+        .detect-btn:hover { background: #1B5E20; }
+        button[type="submit"] { width: 100%; padding: 12px; background-color: #FFC83D; border: none; border-radius: 25px; font-size: 16px; font-weight: 600; color: #4A2C1A; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button[type="submit"]:hover { background-color: #ffb700; }
+        .error-list { color: red; font-size: 0.9rem; margin-bottom: 15px; list-style: none; padding: 0; }
     </style>
 </head>
-
 <body>
 
     <div class="navbar">
@@ -112,7 +30,19 @@
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.non_field_errors }}
+            
+            {% if form.errors %}
+                <ul class="error-list">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
             <label>Title:</label>
             {{ form.title }}
@@ -122,6 +52,9 @@
 
             <label>Description:</label>
             {{ form.description }}
+
+            <label>Genre:</label>
+            {{ form.genre }}
 
             <label>Price:</label>
             {{ form.price }}
@@ -144,84 +77,42 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. Handle Security Amount Logic
             const transactionField = document.getElementById('id_transaction_type');
             const securityField = document.getElementById('id_security_amount');
 
             function toggleSecurity() {
-                if (transactionField.value === 'buy') {
-                    securityField.value = '0'; // Set to 0 for sale
-                    securityField.disabled = true;
-                    securityField.style.backgroundColor = '#f3f3f3';
-                    securityField.style.cursor = 'not-allowed';
-                } else {
-                    securityField.disabled = false;
-                    securityField.style.backgroundColor = 'white';
-                    securityField.style.cursor = 'text';
+                if (transactionField && securityField) {
+                    if (transactionField.value === 'buy') {
+                        securityField.value = '0';
+                        securityField.disabled = true;
+                        securityField.style.backgroundColor = '#f3f3f3';
+                    } else {
+                        securityField.disabled = false;
+                        securityField.style.backgroundColor = 'white';
+                    }
                 }
             }
-
-            if (transactionField && securityField) {
+            if (transactionField) {
                 toggleSecurity();
                 transactionField.addEventListener('change', toggleSecurity);
             }
-
-            // 2. Trigger Auto-Detection on Load
             detectLocation();
         });
 
-        // 3. Robust Geolocation Function
         function detectLocation() {
             const locationField = document.getElementById('id_location');
             if (!locationField) return;
-
-            if (!navigator.geolocation) {
-                locationField.placeholder = "Geolocation not supported by your browser";
-                return;
-            }
-
-            locationField.placeholder = "📍 Locating you...";
-
+            if (!navigator.geolocation) { locationField.placeholder = "Not supported"; return; }
+            locationField.placeholder = "📍 Locating...";
             navigator.geolocation.getCurrentPosition(
-                // Success
-                function (position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-
-                    // Fetch address from OpenStreetMap (Nominatim)
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data && data.display_name) {
-                                // Shorten address for better UX (e.g., "Delhi, India")
-                                let address = data.address;
-                                let city = address.city || address.town || address.village || address.county;
-                                let state = address.state;
-                                let fullAddr = data.display_name;
-
-                                // Prefer simple "City, State" if available, else full address
-                                if (city && state) {
-                                    locationField.value = `${city}, ${state}`;
-                                } else {
-                                    locationField.value = fullAddr;
-                                }
-                            } else {
-                                locationField.value = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                            }
-                        })
-                        .catch(() => {
-                            locationField.value = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                        });
+                (pos) => {
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
+                    .then(r => r.json())
+                    .then(d => locationField.value = (d.address.city || d.address.town) + ", " + d.address.state);
                 },
-                // Error
-                function (error) {
-                    console.error("Geo Error:", error);
-                    locationField.placeholder = "⚠️ Location permission denied. Please type manually.";
-                }
+                () => locationField.placeholder = "Permission denied"
             );
         }
     </script>
-
 </body>
-
 </html>

@@ -1,123 +1,120 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookBee 🐝</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <title>{% block title %}BookBee{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        .edit-profile-wrapper {
-    min-height: 70vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 40px;
-}
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #FFFDF5; /* Soft Cream Background */
+            padding-bottom: 100px; /* Space for floating button */
+        }
 
-.edit-profile-card {
-    background: #ffffff;
-    width: 420px;
-    padding: 30px;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-}
+        /* --- NAVBAR STYLES --- */
+        .navbar {
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-.edit-title {
-    text-align: center;
-    color: #2e7d32;
-    margin-bottom: 4px;
-}
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #4A2C1A;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.edit-subtitle {
-    text-align: center;
-    font-size: 14px;
-    color: #777;
-    margin-bottom: 25px;
-}
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
 
-.edit-profile-form .form-group {
-    margin-bottom: 18px;
-}
+        .nav-item {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .nav-item:hover { color: #FFC83D; }
 
-.edit-profile-form label {
-    display: block;
-    font-size: 13px;
-    color: #444;
-    margin-bottom: 6px;
-}
+        /* Small Avatar in Navbar */
+        .nav-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #FFC83D;
+        }
 
-.edit-profile-form input {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-}
+        /* --- FLOATING LEND BUTTON (Bottom Center) --- */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-.edit-profile-form input:focus {
-    outline: none;
-    border-color: #2e7d32;
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
-}
+        .fab-btn {
+            background-color: #2E7D32;
+            color: white;
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.save-btn {
-    width: 100%;
-    padding: 11px;
-    background: #2e7d32;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-    margin-top: 10px;
-}
+        .fab-btn:hover {
+            transform: translateX(-50%) scale(1.05); /* Keep centered + scale */
+            background-color: #1B5E20;
+        }
 
-.save-btn:hover {
-    background: #256628;
-}
+        /* Messages */
+        .alert {
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
 
-.back-link {
-    display: block;
-    text-align: center;
-    margin-top: 18px;
-    color: #2e7d32;
-    text-decoration: none;
-    font-size: 14px;
-}
-.form-errors {
-    background: #fdecea;
-    color: #b71c1c;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-.field-error {
-    color: #c62828;
-    font-size: 13px;
-    margin-top: 4px;
-}
     </style>
 </head>
-
 <body>
 
-    {% if user.is_authenticated %}
+    {% if request.path != '/login/' and request.path != '/signup/' %}
     <nav class="navbar">
-        <div class="logo">BookBee 🐝</div>
-
-        <div class="search-bar-container">
-            <input type="text" placeholder="Search books by name, author...">
-            <select>
-                <option>Sort by Price</option>
-            </select>
-            <select>
-                <option>Location</option>
-            </select>
-            <button class="search-btn">Search</button>
-        </div>
+        <a href="{% url 'home' %}" class="brand">
+            <span style="font-size: 2rem;">🐝</span> BookBee
+        </a>
 
         <div class="nav-links">
             <a href="{% url 'home' %}">Home</a>
@@ -129,24 +126,47 @@
                 {% csrf_token %}
                 <button type="submit" class="logout-btn">Logout</button>
             </form>
+            {% if user.is_authenticated %}
+                <a href="{% url 'home' %}" class="nav-item">Home</a>
+                <a href="{% url 'cart_view' %}" class="nav-item">Cart 🛒</a>
+                
+                <a href="{% url 'profile' %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                    {% if user.userprofile.avatar %}
+                        <img src="{% static user.userprofile.avatar %}" class="nav-avatar">
+                    {% else %}
+                        <div class="nav-avatar" style="background:#FFC83D;"></div>
+                    {% endif %}
+                </a>
+                
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-item" style="background:none; border:none; cursor:pointer;">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-item">Login</a>
+                <a href="{% url 'signup' %}" class="nav-item" style="background:#FFC83D; padding:8px 20px; border-radius:20px; color:#4A2C1A;">Sign Up</a>
+            {% endif %}
         </div>
     </nav>
+    {% endif %}
 
-    <div class="banner">
-        📚 Free Books Available – Borrow Knowledge, Not Cost!
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% if user.is_authenticated and request.path != '/login/' and request.path != '/signup/' %}
+    <div class="fab-container">
+        <a href="{% url 'add_book' %}" class="fab-btn">
+            + LEND A BOOK
+        </a>
     </div>
     {% endif %}
 
-    <div class="content">
-        {% block content %}
-        {% endblock %}
-    </div>
-
-    <footer>
-        <p>BookBee – A community-driven book sharing platform 🌿<br>
-            Share books • Save money • Spread knowledge</p>
-    </footer>
-
 </body>
-
 </html>

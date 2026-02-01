@@ -14,7 +14,6 @@
         display: flex;
         gap: 50px;
         border-top: 5px solid #FFC83D;
-        /* Honey Yellow */
     }
 
     /* Left: Image */
@@ -28,7 +27,6 @@
         border-radius: 12px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         border: 4px solid #FFF8E7;
-        /* Cream Border */
     }
 
     /* Right: Info */
@@ -52,27 +50,18 @@
         margin-bottom: 20px;
     }
 
-    .status-available {
-        background: #E6F4EA;
-        color: #2E7D32;
-    }
-
-    .status-lended {
-        background: #FEF2F2;
-        color: #D93025;
-    }
+    .status-available { background: #E6F4EA; color: #2E7D32; }
+    .status-lended { background: #FEF2F2; color: #D93025; }
 
     .price-tag {
         font-size: 2rem;
         color: #2E7D32;
-        /* Forest Green */
         font-weight: 800;
         margin: 10px 0;
     }
 
     .meta-info {
         background: #FFF8E7;
-        /* Light Cream */
         padding: 15px;
         border-radius: 10px;
         margin: 20px 0;
@@ -84,7 +73,6 @@
 
     .btn-cart {
         background-color: #FFC83D;
-        /* Honey Yellow */
         color: #4A2C1A;
         padding: 15px 40px;
         border: none;
@@ -97,25 +85,22 @@
         display: inline-block;
         margin-top: 20px;
     }
+    .btn-cart:hover { background-color: #ffb700; transform: translateY(-2px); }
 
-    .btn-cart:hover {
-        background-color: #ffb700;
-        transform: translateY(-2px);
-    }
-
-    /* Reviews */
-    .reviews-section {
+    /* REVIEWS STYLES */
+    .review-form-box {
         margin-top: 40px;
         border-top: 2px solid #f3f3f3;
         padding-top: 20px;
     }
-
+    
     .review-card {
-        background: #F9FAFB;
+        background: white;
         padding: 15px;
         border-radius: 12px;
         margin-bottom: 15px;
         border-left: 4px solid #FFC83D;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 </style>
 
@@ -131,8 +116,7 @@
     <div class="book-info-section">
         <h1 class="book-title">{{ book.title }}</h1>
 
-        <span
-            class="status-badge {% if book.status == 'AVAILABLE' %}status-available{% else %}status-lended{% endif %}">
+        <span class="status-badge {% if book.status == 'AVAILABLE' %}status-available{% else %}status-lended{% endif %}">
             {% if book.status == 'AVAILABLE' %}✅ Available Now{% else %}❌ Currently Lended{% endif %}
         </span>
 
@@ -154,18 +138,65 @@
         <button class="btn-cart" style="background: #ccc; cursor: not-allowed;">Unavailable</button>
         {% endif %}
 
-        <div class="reviews-section">
-            <h3>Reviews ({{ avg_rating|floatformat:1 }} / 5.0)</h3>
+        <div class="review-form-box">
+            <h3 style="color: #4A2C1A;">Write a Review ✍️</h3>
+            
+            {% if has_bought %}
+                <div style="background: #F9FAFB; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="submit_review" value="true">
+                        
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-weight:bold; color:#555;">Rating:</label>
+                            <select name="rating" style="padding:8px; border-radius:8px; border:1px solid #ddd; margin-left: 10px;">
+                                <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ (Good)</option>
+                                <option value="3">⭐⭐⭐ (Average)</option>
+                                <option value="2">⭐⭐ (Poor)</option>
+                                <option value="1">⭐ (Terrible)</option>
+                            </select>
+                        </div>
+        
+                        <textarea name="comment" rows="3" placeholder="How was the book condition? Share your experience..." required 
+                            style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; font-family:inherit;"></textarea>
+                        
+                        <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 10px 25px; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+
+            {% else %}
+                <div style="background: #FFF3E0; padding: 20px; border-radius: 12px; border-left: 5px solid #FF9800; display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 2rem;">🔒</div>
+                    <div>
+                        <strong style="color: #E65100; font-size: 1.1rem;">Verified Reviews Only</strong>
+                        <p style="margin: 5px 0 0; color: #BF360C; font-size: 0.9rem;">
+                            To ensure authenticity, you must borrow or buy this book before you can write a review.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3 style="color: #4A2C1A;">Community Reviews ({{ avg_rating|floatformat:1 }} / 5.0)</h3>
             {% for review in reviews %}
             <div class="review-card">
-                <strong>{{ review.author.username }}</strong>
-                <span style="color: #F59E0B;">{% if review.rating >= 4 %}⭐⭐⭐⭐⭐{% else %}⭐⭐⭐{% endif %}</span>
-                <p style="margin-top: 5px; color: #555;">"{{ review.comment }}"</p>
+                <div style="display:flex; justify-content:space-between;">
+                    <strong style="color: #4A2C1A;">@{{ review.author.username }}</strong>
+                    <span style="color: #F59E0B;">
+                        {% if review.rating == 5 %}⭐⭐⭐⭐⭐{% elif review.rating == 4 %}⭐⭐⭐⭐{% elif review.rating == 3 %}⭐⭐⭐{% else %}⭐{% endif %}
+                    </span>
+                </div>
+                <p style="margin-top: 8px; color: #555; line-height: 1.5;">"{{ review.comment }}"</p>
             </div>
             {% empty %}
-            <p style="color: #888;">No reviews yet.</p>
+            <p style="color: #888; font-style: italic;">No reviews yet. Be the first to verify and review!</p>
             {% endfor %}
         </div>
+
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}@{{ profile_user.username }} | BookBee{% endblock %}
+
+{% block content %}
+<style>
+    /* Card Design matching your main profile */
+    .public-profile-card {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .trust-badge {
+        background: #E8F5E9;
+        color: #2E7D32;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 10px;
+        border: 1px solid #C8E6C9;
+    }
+
+    /* Forms & Info Boxes */
+    .credit-box {
+        background: #FFF8E1;
+        padding: 25px;
+        border-radius: 16px;
+        border: 2px dashed #FFC83D;
+        margin-bottom: 30px;
+    }
+
+    .locked-box {
+        background: #F5F5F5;
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #888;
+        border: 1px solid #ddd;
+    }
+</style>
+
+<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+    
+    <div class="public-profile-card">
+        <div style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #FFC83D; overflow: hidden; flex-shrink: 0;">
+            {% if user_profile.avatar %}
+            <img src="{% static user_profile.avatar %}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+            <div style="width: 100%; height: 100%; background: #FFC83D; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #4A2C1A; font-weight: bold;">
+                {{ profile_user.username|slice:":2"|upper }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <h2 style="margin: 0; color: #4A2C1A;">{{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
+            <p style="color: #666; margin: 5px 0;">@{{ profile_user.username }}</p>
+            <p style="color: #888; font-size: 0.9rem;">📧 {{ profile_user.email }}</p>
+            
+            <div class="trust-badge">
+                Trust Score: {{ total_score }} 🛡️
+            </div>
+        </div>
+    </div>
+
+    {% if has_interacted %}
+    <div class="credit-box">
+        <h3 style="margin-top: 0; color: #4A2C1A;">Have you transacted with {{ profile_user.username }}?</h3>
+        <p style="font-size: 0.9rem; color: #666;">Vouch for them to help the community grow.</p>
+        
+        <form method="POST" style="display: flex; gap: 10px; margin-top: 15px;">
+            {% csrf_token %}
+            <input type="text" name="message" placeholder="e.g. 'Great lender! Book was in good condition.'" required 
+                   style="flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ddd; outline: none;">
+            <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer;">
+                Give +1 Trust Point 🛡️
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="locked-box">
+        <p style="font-size: 1.2rem; margin-bottom: 5px;">🔒 <strong>Trust Locked</strong></p>
+        <p style="font-size: 0.9rem;">You can only give trust points to users you have borrowed from or lent to.</p>
+    </div>
+    {% endif %}
+
+    <h3 style="color: #4A2C1A; border-bottom: 2px solid #FFC83D; padding-bottom: 10px; display: inline-block;">Community Feedback</h3>
+    
+    {% if user_credits %}
+        <div style="display: grid; gap: 15px; margin-top: 15px;">
+            {% for credit in user_credits %}
+            <div style="background: white; padding: 15px; border-radius: 12px; border-left: 5px solid #FFC83D; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong style="color: #4A2C1A;">@{{ credit.giver.username }}</strong>
+                    <span style="font-size: 0.8rem; color: #999;">{{ credit.created_at|date:"M d, Y" }}</span>
+                </div>
+                {% if credit.message %}
+                <p style="margin: 8px 0; color: #555; font-style: italic;">"{{ credit.message }}"</p>
+                {% endif %}
+                <span style="color: #2E7D32; font-weight: bold; font-size: 0.9rem;">+1 Trust Point</span>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: #888; margin-top: 15px;">No feedback yet.</p>
+    {% endif %}
+
+</div>
+{% endblock %}
