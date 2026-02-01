@@ -1,32 +1,3 @@
-<<<<<<< HEAD
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login | BookBee</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
-<body>
-
-<div class="auth-bg">
-
-    <!-- 📚 BOOK BACKGROUND -->
-    <div class="book-grid">
-        {% for book in book_covers %}
-            <img src="{% static book %}" alt="Book cover">
-        {% endfor %}
-    </div>
-
-    <!-- 💳 LOGIN CARD -->
-    <div class="auth-card">
-        <img src="{% static 'logo/logo.png' %}" class="auth-logo">
-
-        <h2>Logged out too long?</h2>
-        <p>Your bookshelf missed you.</p>
-=======
 {% extends 'base.html' %}
 {% load static %}
 
@@ -198,29 +169,19 @@
             {% endfor %}
         </ul>
         {% endif %}
->>>>>>> origin/main
 
         <form method="POST" class="login-form">
             {% csrf_token %}
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
-<<<<<<< HEAD
             <button type="submit">Login</button>
         </form>
 
         <span>
             New here? <a href="{% url 'signup' %}">Create an account</a>
         </span>
-=======
-            
-            <button type="submit">Login</button>
-        </form>
-
-        <span>New here? <a href="{% url 'signup_view' %}">Create an account</a></span>
->>>>>>> origin/main
     </div>
 
 </div>
 
-</body>
-</html>
+{% endblock %}

@@ -112,7 +112,19 @@
                 (pos) => {
                     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
                     .then(r => r.json())
-                    .then(d => locationField.value = (d.address.city || d.address.town) + ", " + d.address.state);
+                    .then(d => {
+                        const addr = d.address || {};
+                        const city = addr.city || addr.town || addr.village || addr.state_district || "";
+                        const state = addr.state || addr.region || "";
+                        const country = addr.country || "";
+
+                        let parts = [];
+                        if (city) parts.push(city);
+                        if (state) parts.push(state);
+                        if (country && country !== state) parts.push(country);
+
+                        locationField.value = parts.join(", ");
+                    });
                 },
                 () => locationField.placeholder = "Permission denied"
             );

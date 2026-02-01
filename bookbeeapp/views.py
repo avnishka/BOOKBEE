@@ -421,3 +421,22 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, 'Activation link is invalid or expired!')
         return redirect('signup')
+
+@login_required(login_url='login')
+def rate_owner(request, username):
+    owner = get_object_or_404(User, username=username)
+
+    if owner == request.user:
+        messages.error(request, "You cannot rate yourself.")
+        return redirect(request.META.get('HTTP_REFERER', 'profile'))
+
+    # Add a trust credit instead of modifying profile field
+    UserCredit.objects.create(
+        giver=request.user,
+        receiver=owner,
+        score=1,
+        message="Trust point given after successful interaction."
+    )
+
+    messages.success(request, f"You gave a trust point to {owner.username}! 🛡️")
+    return redirect(request.META.get('HTTP_REFERER', 'profile'))

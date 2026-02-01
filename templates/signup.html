@@ -166,49 +166,12 @@
             {% csrf_token %}
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
-            
             <input type="password" name="password" placeholder="Password" required>
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            
             <button type="submit">Sign Up</button>
         </form>
 
-        <span>Already have an account? <a href="{% url 'login_view' %}">Login</a></span>
-    </div>
-
-    <!-- 💳 SIGNUP CARD -->
-    <div class="auth-card">
-
-        <img src="{% static 'logo/logo.png' %}" class="auth-logo">
-
-        <h2>Buzzzzz In </h2>
-        <p>Where books are shared, n ot shelved forever.</p>
-
-        {% if messages %}
-            <ul class="messages" style="list-style:none;padding:0;margin:10px 0;">
-                {% for message in messages %}
-                    <li style="color:#c62828;background:#fdecea;padding:8px;border-radius:6px;margin-bottom:6px;font-size:0.9rem;">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        <form method="post" class="signup-form">
-            {% csrf_token %}
-
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="email" name="email" placeholder="Email" required>
-
-            <input type="password" name="password1" placeholder="Password" required>
-            <input type="password" name="password2" placeholder="Confirm Password" required>
-
-            <button type="submit">Sign Up</button>
-        </form>
-
-        <span>
-            Already have an account?
-            <a href="{% url 'login' %}">Login</a>
-        </span>
-
+        <span>Already have an account? <a href="{% url 'login' %}">Login</a></span>
     </div>
 
 </div>

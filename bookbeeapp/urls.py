@@ -8,8 +8,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("login_view/", views.login_view, name="login_view"),
-    path("signup_view/", views.signup_view, name="signup_view"),
+    path("login/", views.login_view, name="login"),
+    path("signup/", views.signup_view, name="signup"),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('books/', views.book_list, name='book_list'),
     path('add-book/', views.add_book, name='add_book'),
@@ -25,6 +25,7 @@ urlpatterns = [
     path('user/<str:username>/', views.public_profile, name='public_profile'),
     path('delete-book/<int:pk>/', views.delete_book, name='delete_book'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    path('rate-owner/<str:username>/', views.rate_owner, name='rate_owner'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
