@@ -1,17 +1,179 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Sign Up | BookBee{% endblock %}
 
 {% block content %}
+<style>
+    /* --- FRIEND'S DESIGN (Refined) --- */
+    body { 
+        font-family: 'Poppins', sans-serif; 
+        overflow: hidden; 
+        background: #fdfdfd; 
+    }
+    
+    .auth-bg { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100vw; 
+        height: 100vh; 
+        z-index: 100; 
+        background: #FFF8E1; 
+    }
+    
+    /* 📚 BACKGROUND GRID FIX */
+    .book-grid {
+        position: absolute; 
+        inset: 0; 
+        
+        /* Make grid wider than screen to force "cut off" look at borders */
+        width: 110vw; 
+        left: -5vw; 
+        
+        display: grid;
+        grid-template-rows: repeat(3, 240px); 
+        grid-auto-columns: 160px;
+        grid-auto-flow: column; 
+        gap: 24px; 
+        justify-content: center; 
+        align-content: center;
+        overflow: hidden; 
+        z-index: 1; 
+        opacity: 0.85;
+    }
+
+    .book-grid img { 
+        width: 160px; 
+        height: 240px; 
+        object-fit: cover; 
+        border-radius: 14px; 
+        box-shadow: 0 14px 36px rgba(0,0,0,0.2); 
+    }
+
+    /* GLASS CARD */
+    .auth-card {
+        position: absolute; 
+        z-index: 3; 
+        width: 480px; 
+        padding: 45px 35px; /* Increased padding slightly */
+        
+        background: rgba(255, 255, 255, 0.75); 
+        backdrop-filter: blur(25px); 
+        -webkit-backdrop-filter: blur(25px);
+        
+        border-radius: 24px; 
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 40px 90px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.5);
+        text-align: center; 
+        left: 50%; 
+        top: 50%; 
+        transform: translate(-50%, -50%);
+    }
+
+    .auth-logo { width: 80px; display: block; margin: 0 auto 15px; } 
+    
+    .auth-card h2 { 
+        font-size: 28px; 
+        margin-bottom: 8px; 
+        color: #1a1a1a; 
+        font-weight: 700; 
+        letter-spacing: -0.5px;
+    }
+    
+    .auth-card p { 
+        font-size: 15px; 
+        margin-bottom: 35px; /* More space before form */
+        color: #555; 
+        font-weight: 500;
+    }
+
+    /* 🖊️ INPUTS FIX */
+    .signup-form { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 20px; /* Increased gap so inputs don't stick */
+    }
+    
+    .signup-form input {
+        width: 100%; 
+        padding: 16px; /* Bigger padding for "larger" feel */
+        margin: 0; 
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.1); 
+        background: rgba(255, 255, 255, 0.8); 
+        outline: none; 
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        box-sizing: border-box; 
+    }
+    
+    .signup-form input:focus { 
+        border-color: #2E7D32; 
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1); 
+    }
+    
+    .signup-form button {
+        grid-column: span 2; 
+        width: 100%; 
+        padding: 16px; 
+        margin-top: 15px;
+        background: #2E7D32; 
+        color: white; 
+        border: none; 
+        border-radius: 12px;
+        font-size: 16px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        transition: 0.2s;
+        box-shadow: 0 10px 20px rgba(46, 125, 50, 0.25);
+    }
+    
+    .signup-form button:hover { background: #1B5E20; transform: translateY(-2px); }
+    
+    .auth-card span { display: block; margin-top: 25px; font-size: 14px; color: #666; }
+    .auth-card a { color: #C2410C; font-weight: 700; text-decoration: none; }
+    .auth-card a:hover { text-decoration: underline; }
+    
+    footer, .navbar { display: none !important; }
+</style>
 
 <div class="auth-bg">
-
-    <!-- 📚 BOOK BACKGROUND -->
     <div class="book-grid">
-        {% for book in book_covers %}
-            <img src="{% static book %}" alt="Book cover">
+        {% for book_path in book_covers %}
+            <img src="{% static book_path %}" alt="Book Cover">
         {% endfor %}
+    </div>
+
+    <div class="auth-card">
+        <img src="{% static 'logo/logo.png' %}" class="auth-logo" alt="BookBee Logo">
+
+        <h2>Buzzzzz In</h2>
+        <p>Where books are shared, not shelved forever.</p>
+
+        {% if messages %}
+        <ul style="list-style: none; padding: 0; text-align: left; margin-bottom: 20px;">
+            {% for message in messages %}
+            <li style="padding: 10px; border-radius: 8px; background: #ffebee; color: #c62828; font-size: 0.9rem; text-align: center;">
+                {{ message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST" class="signup-form">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <span>Already have an account? <a href="{% url 'login_view' %}">Login</a></span>
     </div>
 
     <!-- 💳 SIGNUP CARD -->

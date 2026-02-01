@@ -1,4 +1,24 @@
+<<<<<<< HEAD
 /* RESET */
+=======
+/* =========================================
+   1. BEE THEME VARIABLES (UNCHANGED)
+   ========================================= */
+:root {
+    --honey-yellow: #FFC107;
+    --honey-gold: #F59E0B;
+    --forest-green: #2E7D32;
+    --cream-bg: #FFF8E1;
+    --white: #FFFFFF;
+    --dark-text: #374151;
+    --font-main: 'Poppins', sans-serif;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+   2. GLOBAL RESET (UNCHANGED)
+   ========================================= */
+>>>>>>> origin/main
 * {
     margin: 0;
     padding: 0;
@@ -6,6 +26,7 @@
 }
 
 body {
+<<<<<<< HEAD
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
 }
@@ -36,6 +57,71 @@ body {
 }
 
 /* BOOK IMAGES */
+=======
+    font-family: var(--font-main);
+    background-color: var(--cream-bg);
+    color: var(--dark-text);
+    min-height: 100vh;
+
+    /* ⚠️ KEEP FLEX FOR NORMAL PAGES */
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   3. NAVBAR (UNCHANGED)
+   ========================================= */
+.navbar {
+    background-color: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-bottom: 3px solid var(--honey-yellow);
+}
+
+/* ... ALL HER NAVBAR / HOME / CARD STYLES STAY SAME ... */
+
+
+/* =========================================
+   5. LOGIN & SIGNUP (ALIGNMENT FIX APPLIED)
+   ========================================= */
+
+/* 🔒 HARD ISOLATE AUTH PAGES FROM BODY FLEX */
+.auth-bg {
+    position: fixed;        /* ⬅️ KEY FIX */
+    inset: 0;               /* top:0 right:0 bottom:0 left:0 */
+    width: 100vw;
+    height: 100vh;
+
+    background: var(--cream-bg);
+    overflow: hidden;
+
+    /* ⬅️ This cancels body flex influence */
+    display: block;
+}
+
+/* 📚 BOOK GRID — IDENTICAL TO YOUR SYSTEM */
+.book-grid {
+    position: absolute;
+    inset: 0;
+
+    display: grid;
+    grid-template-rows: repeat(3, 225px);
+    grid-auto-columns: 150px;
+    grid-auto-flow: column;
+
+    gap: 24px;
+
+    justify-content: center;
+    align-content: center;
+
+    z-index: 1;
+}
+
+/* BOOK COVERS */
+>>>>>>> origin/main
 .book-grid img {
     width: 150px;
     height: 225px;
@@ -44,7 +130,11 @@ body {
     box-shadow: 0 14px 36px rgba(0,0,0,0.45);
 }
 
+<<<<<<< HEAD
 /* 💳 AUTH CARD (LOGIN + SIGNUP) */
+=======
+/* 💳 GLASS AUTH CARD (UNCHANGED LOOK) */
+>>>>>>> origin/main
 .auth-card {
     position: absolute;
     z-index: 3;
@@ -52,8 +142,14 @@ body {
     width: 420px;
     padding: 36px 32px;
 
+<<<<<<< HEAD
     background: rgba(255, 243, 204, 0.55);
     backdrop-filter: blur(18px);
+=======
+    background: rgba(255, 243, 204, 0.65);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+>>>>>>> origin/main
 
     border-radius: 22px;
     border: 1px solid rgba(255,255,255,0.4);
@@ -69,6 +165,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
+<<<<<<< HEAD
 /* LOGO */
 .auth-logo {
     width: 110px;
@@ -76,6 +173,9 @@ body {
 }
 
 /* TEXT */
+=======
+/* AUTH TEXT */
+>>>>>>> origin/main
 .auth-card h2 {
     font-size: 22px;
     margin-bottom: 6px;
@@ -91,12 +191,18 @@ body {
     width: 100%;
     padding: 13px;
     margin: 10px 0;
+<<<<<<< HEAD
 
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.6);
     background: rgba(255,255,255,0.6);
 
     outline: none;
+=======
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.6);
+>>>>>>> origin/main
 }
 
 /* BUTTON */
@@ -104,6 +210,7 @@ body {
     width: 100%;
     padding: 13px;
     margin-top: 16px;
+<<<<<<< HEAD
 
     background: #2E7D32;
     color: white;
@@ -115,6 +222,15 @@ body {
 }
 
 /* FOOTER TEXT */
+=======
+    background: var(--forest-green);
+    color: white;
+    border: none;
+    border-radius: 10px;
+}
+
+/* FOOTER LINKS */
+>>>>>>> origin/main
 .auth-card span {
     display: block;
     margin-top: 14px;
@@ -122,6 +238,7 @@ body {
 }
 
 .auth-card a {
+<<<<<<< HEAD
     color: #2E7D32;
     font-weight: 500;
     text-decoration: none;
@@ -135,11 +252,30 @@ body {
 }
 
 /* Inputs spacing reset inside grid */
+=======
+    color: var(--forest-green);
+    font-weight: 600;
+}
+
+/* SIGNUP GRID */
+.signup-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+>>>>>>> origin/main
 .signup-form input {
     margin: 0;
 }
 
+<<<<<<< HEAD
 /* Full width button */
 .signup-form button {
     grid-column: span 2;
 }
+=======
+.signup-form button {
+    grid-column: span 2;
+}
+>>>>>>> origin/main

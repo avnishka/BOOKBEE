@@ -59,6 +59,13 @@
         font-weight: 800;
         margin: 10px 0;
     }
+    
+    /* New class for the small text */
+    .duration-text {
+        font-size: 1rem;
+        color: #666;
+        font-weight: normal;
+    }
 
     .meta-info {
         background: #FFF8E7;
@@ -120,7 +127,12 @@
             {% if book.status == 'AVAILABLE' %}✅ Available Now{% else %}❌ Currently Lended{% endif %}
         </span>
 
-        <div class="price-tag">₹{{ book.price }}</div>
+        <div class="price-tag">
+            ₹{{ book.price }}
+            {% if book.transaction_type == 'rent' %}
+                <span class="duration-text">/ 2 weeks</span>
+            {% endif %}
+        </div>
 
         <div class="meta-info">
             <span>📍 <strong>Location:</strong> {{ book.location }}</span>

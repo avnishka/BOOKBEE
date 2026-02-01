@@ -136,8 +136,8 @@
                     <button type="submit" class="nav-item" style="background:none; border:none; cursor:pointer;">Logout</button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}" class="nav-item">Login</a>
-                <a href="{% url 'signup' %}" class="nav-item" style="background:#FFC83D; padding:8px 20px; border-radius:20px; color:#4A2C1A;">Sign Up</a>
+                <a href="{% url 'login_view' %}" class="nav-item">Login</a>
+                <a href="{% url 'signup_view' %}" class="nav-item" style="background:#FFC83D; padding:8px 20px; border-radius:20px; color:#4A2C1A;">Sign Up</a>
             {% endif %}
         </div>
     </nav>

@@ -1,0 +1,13 @@
+{% autoescape off %}
+Hi {{ user.username }},
+
+Welcome to BookBee! 🐝
+
+Please click on the link below to confirm your registration and activate your account:
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+If you did not register for this account, simply ignore this email.
+
+Happy Reading,
+The BookBee Team
+{% endautoescape %}
