@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path,include
 from . import views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
@@ -21,6 +21,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('payment-success/', views.payment_success, name='payment_success'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('chat/', include('chat.urls')),
     path('user/<str:username>/', views.public_profile, name='public_profile'),
     path('delete-book/<int:pk>/', views.delete_book, name='delete_book'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),

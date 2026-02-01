@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import BookForm, EditProfileForm 
 from .models import Book, Review, Cart, UserProfile, UserCredit, Order
 from django.db.models import Q  
+from chat.models import ChatRoom
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -192,6 +193,13 @@ def add_to_cart(request, pk):
     
     # Standard Logic: Add the new book to existing items
     cart.items.add(book)
+
+    # Create or get chat room between the two users
+    ChatRoom.objects.get_or_create(
+        user1=request.user,
+        user2=book.owner
+    )
+
     
     messages.success(request, f"Added {book.title} to your cart!")
     return redirect('cart_view')
@@ -199,8 +207,16 @@ def add_to_cart(request, pk):
 @login_required(login_url='login')
 def cart_view(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    items = cart.items.all()
-    total_price = sum(item.price for item in items)
+    items = []
+    for book in cart.items.all():
+        room, created = ChatRoom.objects.get_or_create(
+            user1=request.user,
+            user2=book.owner
+        )
+        book.room = room  # attach chat room to each book
+        items.append(book)
+
+    total_price = sum(book.price for book in items)
     return render(request, 'cart.html', {'items': items, 'total_price': total_price})
 
 @login_required(login_url='login')
@@ -367,48 +383,6 @@ def public_profile(request, username):
     }
     return render(request, 'public_profile.html', context)
 
-@login_required(login_url='login')
-def book_detail(request, pk):
-
-    book = get_object_or_404(Book, pk=pk)
-    
-    # 1. VERIFICATION CHECK: Has this user bought/rented this book?
-    # We look for an Order record where buyer is the current user and book is this book.
-    has_bought = Order.objects.filter(buyer=request.user, book=book).exists()
-
-    # 2. Handle Review Submission (Only if verified)
-    if request.method == 'POST' and 'submit_review' in request.POST:
-        # Security Check: Even if they inspect element to show the form, backend blocks it.
-        if not has_bought:
-            messages.error(request, "You must borrow or buy this book to review it! 🚫")
-            return redirect('book_detail', pk=pk)
-
-        rating = request.POST.get('rating')
-        comment = request.POST.get('comment')
-        
-        if rating and comment:
-            Review.objects.create(
-                author=request.user,
-                book=book,
-                rating=rating,
-                comment=comment
-            )
-            messages.success(request, "Review added successfully! ⭐")
-            return redirect('book_detail', pk=pk)
-
-    # 3. Get existing reviews & Calculate Average
-    reviews = Review.objects.filter(book=book).order_by('-id')
-    
-    avg_rating = 0
-    if reviews.exists():
-        avg_rating = sum(r.rating for r in reviews) / reviews.count()
-
-    return render(request, 'book_detail.html', {
-        'book': book,
-        'reviews': reviews,
-        'avg_rating': avg_rating,
-        'has_bought': has_bought  # <--- Passing this permission flag to the template
-    })
 
 @login_required(login_url='login')
 def delete_book(request, pk):
@@ -430,6 +404,7 @@ def delete_book(request, pk):
         messages.success(request, "Book removed from listings successfully. 🗑️")
     
     return redirect('profile')
+
 
 def activate(request, uidb64, token):
     try:
