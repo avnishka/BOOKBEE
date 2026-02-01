@@ -1,76 +1,86 @@
 {% extends 'base.html' %}
-{% block title %}Pay with UPI | BookBee{% endblock %}
+
+{% block title %}Checkout | BookBee{% endblock %}
+
 {% block content %}
 <style>
-    .pay-container {
-        max-width: 450px;
+    /* Center the checkout box */
+    .payment-container {
+        max-width: 600px;
         margin: 50px auto;
         background: white;
         padding: 40px;
         border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border-top: 5px solid #2E7D32;
+        border-top: 5px solid #FFC83D; /* BookBee Yellow top border */
     }
 
-    .amount-display {
-        background: #E8F5E9;
-        color: #2E7D32;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 2rem;
-        font-weight: 800;
+    .amount-box {
+        background: #FFF8E7;
+        padding: 20px;
+        border-radius: 12px;
         margin: 20px 0;
+        border: 2px solid #FFC83D;
     }
 
-    .qr-box {
-        border: 2px dashed #ccc;
-        padding: 10px;
+    .amount-box h2 {
+        margin: 0;
+        color: #2E7D32;
+        font-size: 2.5rem;
+    }
+
+    /* Simulation Button Style */
+    .simulate-btn {
         display: inline-block;
-        margin-bottom: 20px;
-        border-radius: 10px;
-    }
-
-    .btn-confirm {
-        width: 100%;
-        padding: 15px;
-        background: #F59E0B;
-        border: none;
-        border-radius: 30px;
-        font-size: 1rem;
+        background-color: #2E7D32; /* Green for Success */
+        color: white;
+        padding: 15px 30px;
+        font-size: 1.2rem;
         font-weight: bold;
-        cursor: pointer;
-        color: #4A2C1A;
+        text-decoration: none;
+        border-radius: 50px;
+        margin-top: 20px;
+        transition: 0.3s;
+        box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
     }
 
-    .btn-confirm:hover {
-        background: #D97706;
+    .simulate-btn:hover {
+        background-color: #1B5E20;
+        transform: translateY(-2px);
+    }
+
+    .note {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 15px;
+        font-style: italic;
     }
 </style>
 
-<div class="pay-container">
-    <h2>Scan & Pay 📲</h2>
-    <p>Use GPay, PhonePe, or Paytm</p>
+<div class="payment-container">
+    <h1>💳 Secure Checkout</h1>
+    <p>Complete your purchase to borrow or buy these books.</p>
 
-    <div class="amount-display">₹{{ total_price }}</div>
-
-    <div class="qr-box">
-        <img src="{{ qr_code_url }}" alt="UPI QR Code" width="200" height="200">
+    <div class="amount-box">
+        <p style="margin:0; color:#5a4634; font-weight:bold;">Total Amount to Pay</p>
+        <h2>₹{{ total_price }}</h2>
     </div>
 
-    <p style="font-size: 0.9rem; color: #555; margin-bottom: 20px;">
-        Paying to: <strong>BookBee Store</strong><br>
-        <span style="font-size: 0.8rem; color: #999;">Merchant ID: bookbee.merchant@upi</span>
-    </p>
+    <div style="margin: 30px 0;">
+        <p>Scan to Pay (Mockup)</p>
+        <img src="{{ qr_code_url }}" alt="Payment QR" style="width: 200px; border-radius: 10px;">
+    </div>
 
-    <a href="{{ upi_link }}"
-        style="display: block; margin-bottom: 20px; color: #2E7D32; font-weight: bold; text-decoration: none;">
-        👉 Click here to pay on mobile
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+    <h3 style="color: #d32f2f;">⚠️ Developer Mode</h3>
+    <p>Since this is a project demo, click below to simulate a successful transaction:</p>
+    
+    <a href="{% url 'payment_success' %}" class="simulate-btn">
+        ✅ Simulate Payment Success
     </a>
 
-    <form action="{% url 'payment_success' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn-confirm">✅ I have made the payment</button>
-    </form>
+    <p class="note">This will create the order, update ownership, and remove the book from the home page.</p>
 </div>
 {% endblock %}

@@ -109,7 +109,7 @@
 
     .tabs-header {
         display: flex;
-        justify-content: center; /* <--- THIS CENTERS THE BUTTONS */
+        justify-content: center; 
         gap: 15px;
         margin-bottom: 25px;
     }
@@ -127,26 +127,24 @@
         position: relative;
     }
 
-    /* Active State (Like the Black "Food" button) */
+    /* Active State */
     .tab-btn.active {
-        background: #2E3A46; /* Dark Swiggy-like color */
+        background: #2E3A46; 
         color: white;
         box-shadow: 0 4px 12px rgba(46, 58, 70, 0.3);
         transform: scale(1.05);
     }
     
-    /* Hover State */
     .tab-btn:hover:not(.active) {
         background: #E0E0E0;
     }
 
     /* --- LIST ITEMS --- */
     .tab-content {
-        display: none; /* Hidden by default */
+        display: none; 
         animation: fadeIn 0.4s ease;
     }
     
-    /* Show the first one by default */
     .tab-content.active-content {
         display: block;
     }
@@ -245,9 +243,19 @@
                             {{ book.status }}
                         </span>
                     </div>
-                    <div style="text-align: right;">
+                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
                         <div style="font-weight: 800; color: #4A2C1A; font-size: 1.1rem;">₹{{ book.price }}</div>
-                        <div style="font-size: 0.8rem; color: #999; margin-top: 4px;">{{ book.created_at|date:"M d, Y" }}</div>
+                        
+                        {% if book.status == 'AVAILABLE' %}
+                            <form action="{% url 'delete_book' book.pk %}" method="POST" onsubmit="return confirm('Are you sure you want to remove this book?');">
+                                {% csrf_token %}
+                                <button type="submit" style="background: #FFEBEE; color: #C62828; border: none; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.2s;">
+                                    🗑️ Delete
+                                </button>
+                            </form>
+                        {% else %}
+                            <div style="font-size: 0.8rem; color: #999;">{{ book.created_at|date:"M d, Y" }}</div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -293,20 +301,17 @@
     }
 
     function openTab(evt, tabName) {
-        // 1. Hide all tab content
         var tabContent = document.getElementsByClassName("tab-content");
         for (var i = 0; i < tabContent.length; i++) {
             tabContent[i].style.display = "none";
             tabContent[i].classList.remove("active-content");
         }
 
-        // 2. Remove "active" class from all tab buttons
         var tabLinks = document.getElementsByClassName("tab-btn");
         for (var i = 0; i < tabLinks.length; i++) {
             tabLinks[i].classList.remove("active");
         }
 
-        // 3. Show the current tab and add "active" class to the button clicked
         document.getElementById(tabName).style.display = "block";
         document.getElementById(tabName).classList.add("active-content");
         evt.currentTarget.classList.add("active");

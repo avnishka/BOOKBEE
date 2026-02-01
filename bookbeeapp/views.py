@@ -47,37 +47,55 @@ def home(request):
 # --- AUTH VIEWS ---
 def signup_view(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
+        # 1. Get data and STRIP whitespace (Fixes the "space" bug)
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        confirm_password = request.POST.get("confirm_password", "")
 
+        # 2. Validations
+        if not username or not password:
+            messages.error(request, "Username and Password are required.")
+            return redirect("signup")
+            
         if password != confirm_password:
             messages.error(request, "Passwords do not match")
             return redirect("signup")
+            
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists")
             return redirect("signup")
+            
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists")
             return redirect("signup")
 
+        # 3. CRITICAL: Use 'create_user' (Hashes the password)
+        # Never use 'User.objects.create()' for users!
         user = User.objects.create_user(username=username, email=email, password=password)
-        login(request, user)
+        
+        # 4. Login the user (Specify backend to prevent errors)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        
         messages.success(request, "Welcome to BookBee 🐝")
         return redirect("home") 
+        
     return render(request, "signup.html")
 
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            login(request, form.get_user())
+            # authenticate() checks the hashed password
+            user = form.get_user()
+            login(request, user)
             return redirect('home')
         else:
+            # This triggers if password doesn't match hash
             messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
+        
     return render(request, 'login.html', {'form': form})
 
 # --- BOOK ACTIONS ---
@@ -151,10 +169,12 @@ def book_detail(request, pk):
 def add_to_cart(request, pk):
     book = get_object_or_404(Book, pk=pk)
     cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Standard Logic: Add the new book to existing items
     cart.items.add(book)
+    
     messages.success(request, f"Added {book.title} to your cart!")
     return redirect('cart_view')
-
 @login_required(login_url='login')
 def cart_view(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -316,6 +336,7 @@ def public_profile(request, username):
 
 @login_required(login_url='login')
 def book_detail(request, pk):
+
     book = get_object_or_404(Book, pk=pk)
     
     # 1. VERIFICATION CHECK: Has this user bought/rented this book?
@@ -355,3 +376,24 @@ def book_detail(request, pk):
         'avg_rating': avg_rating,
         'has_bought': has_bought  # <--- Passing this permission flag to the template
     })
+
+@login_required(login_url='login')
+def delete_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+
+    # 1. Security Check: Are you the owner?
+    if request.user != book.owner:
+        messages.error(request, "You are not authorized to delete this book.")
+        return redirect('profile')
+
+    # 2. Status Check: Can only delete 'Available' books
+    if book.status != 'AVAILABLE':
+        messages.error(request, "Cannot delete this book because it is currently rented or sold.")
+        return redirect('profile')
+
+    # 3. Perform Deletion
+    if request.method == 'POST':
+        book.delete()
+        messages.success(request, "Book removed from listings successfully. 🗑️")
+    
+    return redirect('profile')
