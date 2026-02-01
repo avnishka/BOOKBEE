@@ -23,8 +23,9 @@ class Book(models.Model):
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    author = models.CharField(max_length=200, default="Unknown Author")
     image = models.ImageField(upload_to='book_covers/')
-    price = models.DecimalField(max_digits=6, decimal_places=2, help_text="Rent per day or Sale price")
+    price = models.DecimalField(max_digits=6, decimal_places=2, help_text="Rent per 2 weeks or Sale price")
     security_amount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00, blank=True, null=True)
     
     # Location & Pincode

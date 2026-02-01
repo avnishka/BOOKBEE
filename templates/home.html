@@ -163,6 +163,8 @@
         font-weight: 800;
         color: #2E7D32;
     }
+    
+    /* Correctly defined class for the suffix */
     .per-day {
         font-size: 0.8rem;
         color: #999;
@@ -206,7 +208,7 @@
             <div class="b-price">
                 ₹{{ book.price|floatformat:0 }}
                 {% if book.transaction_type == 'rent' %}
-                    <span class="per-day">/ day</span>
+                    <span class="per-day">/ 2 weeks</span>
                 {% endif %}
             </div>
         </div>

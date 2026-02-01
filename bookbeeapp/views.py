@@ -7,8 +7,14 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import BookForm, EditProfileForm 
 from .models import Book, Review, Cart, UserProfile, UserCredit, Order
 from django.db.models import Q  
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
 
 # --- HOME VIEW (Merged Logic) ---
+@login_required(login_url='login')
 def home(request):
     # 1. Start with Available books
     books = Book.objects.filter(status='AVAILABLE').order_by('-created_at')
@@ -44,63 +50,72 @@ def home(request):
 
     return render(request, 'home.html', {'books': books})
 
+
 # --- AUTH VIEWS ---
 def signup_view(request):
+    BOOK_COVERS = [f"books/book{i}.jpg" for i in range(1, 29)]
+
     if request.method == "POST":
-        # 1. Get data and STRIP whitespace
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
 
-        # 2. Validations
+        # Validations
         if not username or not password:
             messages.error(request, "Username and Password are required.")
-            return redirect("signup")
+            return render(request, "signup.html", {"book_covers": BOOK_COVERS})
             
         if password != confirm_password:
             messages.error(request, "Passwords do not match")
-            return redirect("signup")
+            return render(request, "signup.html", {"book_covers": BOOK_COVERS})
             
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists")
-            return redirect("signup")
+            return render(request, "signup.html", {"book_covers": BOOK_COVERS})
             
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists")
-            return redirect("signup")
+            return render(request, "signup.html", {"book_covers": BOOK_COVERS})
 
-        # 3. Create the user
+        # Create User
         user = User.objects.create_user(username=username, email=email, password=password)
+        user.is_active = False 
+        user.save()
+
+        # Send Email
+        domain = request.get_host()
+        mail_subject = 'Activate your BookBee account 🐝'
+        message = render_to_string('acc_active_email.html', {
+            'user': user,
+            'domain': domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': default_token_generator.make_token(user),
+        })
         
-        # --- CHANGES START HERE ---
-        
-        # REMOVED: login(request, user, backend='...') 
-        # We do NOT log them in automatically anymore.
-        
-        # 4. Redirect to LOGIN page with a success message
-        messages.success(request, "Account created successfully! Please log in. 🐝")
+        email = EmailMessage(mail_subject, message, to=[email])
+        email.send()
+
+        messages.success(request, "Please check your email to verify your account! 📧")
         return redirect("login") 
         
-        # --- CHANGES END HERE ---
-        
-    return render(request, "signup.html")
+    return render(request, "signup.html", {"book_covers": BOOK_COVERS})
 
 def login_view(request):
+    BOOK_COVERS = [f"books/book{i}.jpg" for i in range(1, 29)]
+
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            # authenticate() checks the hashed password
             user = form.get_user()
             login(request, user)
             return redirect('home')
         else:
-            # This triggers if password doesn't match hash
             messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
         
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'login.html', {'form': form, 'book_covers': BOOK_COVERS})
 
 # --- BOOK ACTIONS ---
 @login_required(login_url='login') 
@@ -415,3 +430,19 @@ def delete_book(request, pk):
         messages.success(request, "Book removed from listings successfully. 🗑️")
     
     return redirect('profile')
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Your account is activated! You can now log in. 🐝')
+        return redirect('login')
+    else:
+        messages.error(request, 'Activation link is invalid or expired!')
+        return redirect('signup')
