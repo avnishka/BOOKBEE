@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Sign Up | BookBee{% endblock %}
 
@@ -101,5 +102,44 @@
     <div class="login-link">
         Already have an account? <a href="{% url 'login' %}">Log In here</a>
     </div>
+    footer { display: none !important; }
+</style>
+
+<div class="auth-bg">
+
+    <!-- 📚 BOOK BACKGROUND -->
+    <div class="book-grid">
+        {% for book in book_covers %}
+            <img src="{% static book %}" alt="Book cover">
+        {% endfor %}
+    </div>
+
+    <!-- 💳 SIGNUP CARD -->
+    <div class="auth-card">
+
+        <img src="{% static 'logo/logo.png' %}" class="auth-logo">
+
+        <h2>Buzzzzz In </h2>
+        <p>Where books are shared, not shelved forever.</p>
+
+        <form method="post" class="signup-form">
+            {% csrf_token %}
+
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+
+            <input type="password" name="password1" placeholder="Password" required>
+            <input type="password" name="password2" placeholder="Confirm Password" required>
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <span>
+            Already have an account?
+            <a href="{% url 'login' %}">Login</a>
+        </span>
+
+    </div>
+
 </div>
 {% endblock %}
