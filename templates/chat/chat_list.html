@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block content %}
+{% load static %}  {% block content %}
 
 <style>
     body {
@@ -62,6 +62,15 @@
         font-weight: 600;
         color: #2F3A4A;
         font-size: 1rem;
+        overflow: hidden; /* ✅ Ensures image stays circular */
+        flex-shrink: 0;
+    }
+
+    /* ✅ NEW: Style for the avatar image */
+    .chat-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .chat-name {
@@ -88,9 +97,15 @@
             {% with room.user2 as other %}
                 <div class="chat-card" style="justify-content:space-between;">
                     <a href="{% url 'chat_room' room.id %}" style="display:flex;align-items:center;gap:16px;flex:1;text-decoration:none;color:inherit;">
+                        
                         <div class="chat-avatar">
-                            {{ other.username|slice:":2"|upper }}
+                            {% if other.userprofile.avatar %}
+                                <img src="{% static other.userprofile.avatar %}" alt="{{ other.username }}">
+                            {% else %}
+                                {{ other.username|slice:":2"|upper }}
+                            {% endif %}
                         </div>
+
                         <div style="flex:1;">
                             <div class="chat-name" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span>{{ other.username }}</span>
@@ -116,9 +131,15 @@
             {% with room.user1 as other %}
                 <div class="chat-card" style="justify-content:space-between;">
                     <a href="{% url 'chat_room' room.id %}" style="display:flex;align-items:center;gap:16px;flex:1;text-decoration:none;color:inherit;">
+                        
                         <div class="chat-avatar">
-                            {{ other.username|slice:":2"|upper }}
+                            {% if other.userprofile.avatar %}
+                                <img src="{% static other.userprofile.avatar %}" alt="{{ other.username }}">
+                            {% else %}
+                                {{ other.username|slice:":2"|upper }}
+                            {% endif %}
                         </div>
+
                         <div style="flex:1;">
                             <div class="chat-name" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span>{{ other.username }}</span>
