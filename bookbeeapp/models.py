@@ -80,7 +80,7 @@ class Cart(models.Model):
 # --- 4. USER PROFILE MODEL (Restored) ---
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.CharField(max_length=255, default='images/default.png') 
+    avatar = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.user.username

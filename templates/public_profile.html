@@ -53,7 +53,7 @@
     <div class="public-profile-card">
         <div style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #FFC83D; overflow: hidden; flex-shrink: 0;">
             {% if user_profile.avatar %}
-            <img src="{% static user_profile.avatar %}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="{% static 'images/'|add:user_profile.avatar %}" style="width: 100%; height: 100%; object-fit: cover;">
             {% else %}
             <div style="width: 100%; height: 100%; background: #FFC83D; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #4A2C1A; font-weight: bold;">
                 {{ profile_user.username|slice:":2"|upper }}
@@ -86,12 +86,13 @@
         <p style="font-size: 0.9rem; color: #666;">Vouch for them to help the community grow.</p>
         
         <form method="POST" style="display: flex; gap: 10px; margin-top: 15px;">
-            {% csrf_token %}
-            <input type="text" name="message" placeholder="e.g. 'Great lender! Book was in good condition.'" required 
-                   style="flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ddd; outline: none;">
-            <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer;">
-                Give +1 Trust Point 🛡️
-            </button>
+        {% csrf_token %}
+        <input type="hidden" name="give_credit" value="1">
+        <input type="text" name="message" placeholder="e.g. 'Great lender! Book was in good condition.'" required 
+           style="flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ddd; outline: none;">
+         <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer;">
+        Give +1 Trust Point 🛡️
+        </button>
         </form>
     </div>
     {% else %}

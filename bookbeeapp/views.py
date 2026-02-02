@@ -14,20 +14,15 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 
-# --- HOME VIEW (Merged Logic) ---
-@login_required(login_url='login')
+# --- HOME VIEW ---
+@login_required(login_url='login_view')
 def home(request):
-    # 1. Start with Available books
     books = Book.objects.filter(status='AVAILABLE').order_by('-created_at')
-
-    # 2. Get Filters
     query = request.GET.get('q')
     location = request.GET.get('location')
     genre = request.GET.get('genre')
     sort_option = request.GET.get('sort')
 
-    # 3. Apply Search 
-    # (Removed 'author' to fix the crash. Added 'genre' so text search works better)
     if query:
         books = books.filter(
             Q(title__icontains=query) | 
@@ -36,18 +31,10 @@ def home(request):
             Q(genre__icontains=query)
         )
 
-    # 4. Apply Dropdown Filters
     if location:
         books = books.filter(location__icontains=location)
-    
     if genre:
         books = books.filter(genre__iexact=genre)
-
-    # 5. Sorting
-    if sort_option == 'low_to_high':
-        books = books.order_by('price')
-    elif sort_option == 'high_to_low':
-        books = books.order_by('-price')
 
     return render(request, 'home.html', {'books': books})
 
@@ -56,13 +43,11 @@ def signup_view(request):
     BOOK_COVERS = [f"books/book{i}.jpg" for i in range(1, 29)]
 
     if request.method == "POST":
-        # ... (keep your existing username/email/password fetching code) ...
         username = request.POST.get("username", "").strip()
         email = request.POST.get("email", "").strip()
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
 
-        # ... (keep your existing validations) ...
         if not username or not password:
             messages.error(request, "Username and Password are required.")
             return render(request, "signup.html", {"book_covers": BOOK_COVERS})
@@ -79,19 +64,15 @@ def signup_view(request):
             messages.error(request, "Email already exists")
             return render(request, "signup.html", {"book_covers": BOOK_COVERS})
 
-        # --- CODE CHANGE STARTS HERE ---
-        
-        # 1. Create the User
+        # Create User
         user = User.objects.create_user(username=username, email=email, password=password)
         user.is_active = False 
         user.save()
 
-        # 2. ✅ FIX: Create the UserProfile immediately
+        # ✅ FIX: Create UserProfile immediately to prevent "User has no userprofile" error
         UserProfile.objects.create(user=user)
 
-        # -------------------------------
-
-        # Send Email (Keep your existing email code)
+        # Send Email
         domain = request.get_host()
         mail_subject = 'Activate your BookBee account 🐝'
         message = render_to_string('acc_active_email.html', {
@@ -108,13 +89,12 @@ def signup_view(request):
         except Exception as e:
             messages.error(request, f"Error sending email: {e}")
 
-        return redirect("login_view") # Ensure this matches your URL name
+        return redirect("login_view")
         
     return render(request, "signup.html", {"book_covers": BOOK_COVERS})
 
 def login_view(request):
     BOOK_COVERS = [f"books/book{i}.jpg" for i in range(1, 29)]
-
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -125,11 +105,10 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
-        
     return render(request, 'login.html', {'form': form, 'book_covers': BOOK_COVERS})
 
 # --- BOOK ACTIONS ---
-@login_required(login_url='login') 
+@login_required(login_url='login_view') 
 def add_book(request):
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
@@ -143,7 +122,6 @@ def add_book(request):
     return render(request, 'add_book.html', {'form': form})
 
 def book_list(request):
-    # Simple list view
     query = request.GET.get('q')
     if query:
         books = Book.objects.filter(title__icontains=query)
@@ -151,17 +129,12 @@ def book_list(request):
         books = Book.objects.all()
     return render(request, 'book_list.html', {'books': books}) 
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
-    
-    # 1. VERIFICATION: Check if the user has actually ordered this book
-    # We look for an Order where the 'buyer' is the current user and 'book' is this book
     has_bought = Order.objects.filter(buyer=request.user, book=book).exists()
 
-    # 2. Handle Review Submission (POST Request)
     if request.method == 'POST' and 'submit_review' in request.POST:
-        # Security Check: Prevent forced reviews via inspecting element
         if not has_bought:
             messages.error(request, "You must borrow or buy this book to review it! 🚫")
             return redirect('book_detail', pk=pk)
@@ -179,14 +152,11 @@ def book_detail(request, pk):
             messages.success(request, "Review added successfully! ⭐")
             return redirect('book_detail', pk=pk)
 
-    # 3. Get existing reviews
     reviews = Review.objects.filter(book=book).order_by('-id')
-    
     avg_rating = 0
     if reviews.exists():
         avg_rating = sum(r.rating for r in reviews) / reviews.count()
 
-    # Pass 'has_bought' to the template so we can hide/show the form
     return render(request, 'book_detail.html', {
         'book': book,
         'reviews': reviews,
@@ -195,41 +165,38 @@ def book_detail(request, pk):
     })
 
 # --- CART & CHECKOUT ---
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def add_to_cart(request, pk):
-
     book = get_object_or_404(Book, pk=pk)
-    cart, created = Cart.objects.get_or_create(user=request.user)
     
-    # Standard Logic: Add the new book to existing items
+    # 1. ✅ FIX: Loophole Closed - Check ownership FIRST
+    if book.owner == request.user:
+        messages.error(request, "You cannot borrow or buy your own book! 🐝")
+        return redirect('home')
+
+    # 2. Add to Cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
     cart.items.add(book)
 
-    # Create or get chat room between the two users
-    ChatRoom.objects.get_or_create(
-        user1=request.user,
-        user2=book.owner
-    )
-
+    # 3. Create Chat Room
+    ChatRoom.objects.get_or_create(user1=request.user, user2=book.owner)
     
     messages.success(request, f"Added {book.title} to your cart!")
     return redirect('cart_view')
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def cart_view(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
     items = []
     for book in cart.items.all():
-        room, created = ChatRoom.objects.get_or_create(
-            user1=request.user,
-            user2=book.owner
-        )
-        book.room = room  # attach chat room to each book
+        room, created = ChatRoom.objects.get_or_create(user1=request.user, user2=book.owner)
+        book.room = room
         items.append(book)
 
     total_price = sum(book.price for book in items)
     return render(request, 'cart.html', {'items': items, 'total_price': total_price})
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def remove_from_cart(request, pk):
     book = get_object_or_404(Book, pk=pk)
     cart = Cart.objects.get(user=request.user)
@@ -237,7 +204,7 @@ def remove_from_cart(request, pk):
     messages.info(request, "Item removed from cart.")
     return redirect('cart_view')
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def checkout(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
     items = cart.items.all()
@@ -258,86 +225,83 @@ def checkout(request):
         'upi_link': upi_link
     })
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def payment_success(request):
-    # 1. Get the user's cart
     cart = Cart.objects.get(user=request.user)
     
-    # 2. Process each book
     for book in cart.items.all():
-        # A. Create the Order Record (Proof of purchase/rent)
-        # IMPORTANT: We do this BEFORE changing ownership so we record the correct seller.
-        Order.objects.create(
-            buyer=request.user,
-            seller=book.owner, 
-            book=book
-        )
+        Order.objects.create(buyer=request.user, seller=book.owner, book=book)
         
-        # B. RENT vs BUY Logic
         if book.transaction_type == 'rent':
-            # --- SCENARIO 1: RENT ---
-            # ERROR FIX: Do NOT change book.owner
-            # The owner stays as the original lender (e.g., Abhya)
             book.status = 'LENDED'
             book.is_available = False  
-            
         else:
-            # --- SCENARIO 2: BUY ---
-            # Ownership transfers to YOU (Buyer)
             book.owner = request.user 
             book.status = 'SOLD'       
             book.is_available = False  
-
-        # C. Save the changes to the database
         book.save()
 
-    # 3. Clear cart and finish
     cart.items.clear()
     messages.success(request, "Payment Successful! Order Placed. 🐝")
     return redirect('home')
 
 # --- PROFILE VIEWS ---
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def profile(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    available_avatars = ['av1.png', 'av2.png', 'av3.png', 'av4.png', 'av5.png']
 
-    # Handle Avatar Change
-    if request.method == 'POST':
-        if 'selected_avatar' in request.POST:
-            avatar_filename = request.POST.get('selected_avatar')
-            user_profile.avatar = f"images/{avatar_filename}"
-            user_profile.save()
+    # ✅ HANDLE AVATAR UPDATE
+    if request.method == "POST" and request.POST.get("selected_avatar"):
+        selected_avatar = request.POST.get("selected_avatar")
+        user_profile.avatar = selected_avatar
+        user_profile.save()
+        messages.success(request, "Avatar updated successfully! 🐝")
+        return redirect('profile')
+
+    # 1. ✅ TRUST SCORE LOGIC
+    if request.method == 'POST' and request.POST.get('action') == 'give_credit':
+        target_username = request.POST.get('target_username')
+        message = request.POST.get('message', 'Verified transaction trust point.')
+        target_user = get_object_or_404(User, username=target_username)
+        
+        if target_user == request.user:
+            messages.error(request, "You cannot increase your own trust score! 🚫")
             return redirect('profile')
 
+        has_transacted = Order.objects.filter(
+            (Q(buyer=request.user) & Q(seller=target_user)) | 
+            (Q(buyer=target_user) & Q(seller=request.user))
+        ).exists()
+
+        if has_transacted:
+            if not UserCredit.objects.filter(giver=request.user, receiver=target_user).exists():
+                UserCredit.objects.create(giver=request.user, receiver=target_user, score=1, message=message)
+                messages.success(request, f"Trust score for @{target_username} increased! 🛡️")
+            else:
+                messages.warning(request, "You have already given trust points to this user.")
+        else:
+            messages.error(request, "You can only give trust points to users you have traded with! 🚫")
+        return redirect('profile')
+
+    # --- PAGE DATA ---
     user_credits = UserCredit.objects.filter(receiver=request.user).order_by('-created_at')
     total_score = sum(c.score for c in user_credits)
-    
-    # --- TAB 1: LENDING (My Listings) ---
-    # Books I own that are Available or currently Lent out.
-    # We EXCLUDE 'SOLD' because those are books I bought for myself.
     my_listings = Book.objects.filter(owner=request.user).exclude(status='SOLD').order_by('-created_at')
-    
-    # --- TAB 2: BORROWED (Rentals) ---
-    # Orders where I am the buyer AND the book was for 'rent'
     borrowed_books = Order.objects.filter(buyer=request.user, book__transaction_type='rent').order_by('-created_at')
-    
-    # --- TAB 3: HISTORY (Purchases) ---
-    # Orders where I am the buyer AND the book was for 'buy'
     purchased_books = Order.objects.filter(buyer=request.user, book__transaction_type='buy').order_by('-created_at')
 
     context = {
         'user_profile': user_profile,
-        'my_listings': my_listings,       # Tab 1
-        'borrowed_books': borrowed_books, # Tab 2
-        'purchased_books': purchased_books, # Tab 3
-        'available_avatars': available_avatars,
-        'user_credits': user_credits,
+        'my_listings': my_listings,
+        'borrowed_books': borrowed_books,
+        'purchased_books': purchased_books,
+        'available_avatars': ['av1.png', 'av2.png', 'av3.png', 'av4.png', 'av5.png'],
         'total_score': total_score,
     }
     return render(request, 'profile.html', context)
 
-@login_required(login_url='login')
+
+@login_required(login_url='login_view')
 def edit_profile(request):
     if request.method == 'POST':
         form = EditProfileForm(request.POST, instance=request.user)
@@ -346,42 +310,49 @@ def edit_profile(request):
             messages.success(request, "Profile updated successfully ✨")
             return redirect('profile')
         return render(request, 'edit_profile.html', {'form': form})
-
     form = EditProfileForm(instance=request.user)
     return render(request, 'edit_profile.html', {'form': form})
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def public_profile(request, username):
-
     profile_user = get_object_or_404(User, username=username)
-    
+
+    # 🔁 Redirect if trying to view own public profile
     if profile_user == request.user:
         return redirect('profile')
 
-    user_profile, created = UserProfile.objects.get_or_create(user=profile_user)
+    user_profile = get_object_or_404(UserProfile, user=profile_user)
 
     has_interacted = Order.objects.filter(
         (Q(buyer=request.user) & Q(seller=profile_user)) | 
         (Q(buyer=profile_user) & Q(seller=request.user))
     ).exists()
 
-    if request.method == 'POST':
+    # 🛡️ Handle Trust Point
+    if request.method == 'POST' and request.POST.get('give_credit'):
         if has_interacted:
-            message = request.POST.get('message')
-            UserCredit.objects.create(
-                giver=request.user,
-                receiver=profile_user,
-                score=1,
-                message=message
-            )
-            messages.success(request, f"Trust Point sent to {profile_user.username}! 🛡️")
+            message = request.POST.get('message', 'Verified transaction trust point.')
+
+            if not UserCredit.objects.filter(giver=request.user, receiver=profile_user).exists():
+                UserCredit.objects.create(
+                    giver=request.user,
+                    receiver=profile_user,
+                    score=1,
+                    message=message
+                )
+                messages.success(request, f"Trust Point sent to @{profile_user.username}! 🛡️")
+            else:
+                messages.warning(request, "You already gave a trust point to this user.")
         else:
             messages.error(request, "You must transact with this user first.")
         return redirect('public_profile', username=username)
 
+    # 📊 Trust Score
     user_credits = UserCredit.objects.filter(receiver=profile_user).order_by('-created_at')
     total_score = sum(c.score for c in user_credits)
-    lent_books = Book.objects.filter(owner=profile_user, status='AVAILABLE')
+
+    # 📚 Active Listings
+    lent_books = Book.objects.filter(owner=profile_user).exclude(status='SOLD')
 
     context = {
         'profile_user': profile_user,
@@ -391,30 +362,23 @@ def public_profile(request, username):
         'lent_books': lent_books,
         'has_interacted': has_interacted,
     }
+
     return render(request, 'public_profile.html', context)
 
 
-@login_required(login_url='login')
+@login_required(login_url='login_view')
 def delete_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
-
-    # 1. Security Check: Are you the owner?
     if request.user != book.owner:
         messages.error(request, "You are not authorized to delete this book.")
         return redirect('profile')
-
-    # 2. Status Check: Can only delete 'Available' books
     if book.status != 'AVAILABLE':
         messages.error(request, "Cannot delete this book because it is currently rented or sold.")
         return redirect('profile')
-
-    # 3. Perform Deletion
     if request.method == 'POST':
         book.delete()
         messages.success(request, "Book removed from listings successfully. 🗑️")
-    
     return redirect('profile')
-
 
 def activate(request, uidb64, token):
     try:
