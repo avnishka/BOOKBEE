@@ -61,7 +61,7 @@ def signup_view(request):
         user.is_active = False 
         user.save()
 
-        # ✅ FIX: Create UserProfile immediately to prevent "User has no userprofile" error
+    
         UserProfile.objects.create(user=user)
 
         # Send Email
@@ -161,7 +161,7 @@ def book_detail(request, pk):
 def add_to_cart(request, pk):
     book = get_object_or_404(Book, pk=pk)
     
-    # 1. ✅ FIX: Loophole Closed - Check ownership FIRST
+
     if book.owner == request.user:
         messages.error(request, "You cannot borrow or buy your own book! 🐝")
         return redirect('home')

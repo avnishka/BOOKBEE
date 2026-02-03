@@ -1,8 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-import re  # <--- Needed for Pincode logic
+import re  
 
-# --- 1. BOOK MODEL (Merged Logic) ---
 class Book(models.Model):
     STATUS_CHOICES = [('AVAILABLE', 'Available'), ('LENDED', 'Lended'), ('SOLD', 'Sold')]
     TRANSACTION_CHOICES = [('rent', 'For Rent'), ('buy', 'For Sale')]
@@ -64,20 +63,20 @@ class Book(models.Model):
                 
         super().save(*args, **kwargs)
 
-# --- 2. REVIEW MODEL (Restored) ---
+
 class Review(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     rating = models.IntegerField(default=5)
     comment = models.TextField()
 
-# --- 3. CART MODEL (Restored) ---
+
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     items = models.ManyToManyField(Book)
     created_at = models.DateTimeField(auto_now_add=True)
 
-# --- 4. USER PROFILE MODEL (Restored) ---
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.CharField(max_length=100, blank=True, null=True)
@@ -85,7 +84,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
     
-# --- 5. USER CREDIT MODEL (Restored) ---
 class UserCredit(models.Model):
     giver = models.ForeignKey(User, related_name='credits_given', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='credits_received', on_delete=models.CASCADE)
@@ -96,7 +94,6 @@ class UserCredit(models.Model):
     def __str__(self):
         return f"{self.giver.username} -> {self.receiver.username}"
     
-# --- 6. ORDER MODEL (Restored) ---
 class Order(models.Model):
     buyer = models.ForeignKey(User, related_name='purchases', on_delete=models.CASCADE)
     seller = models.ForeignKey(User, related_name='sales', on_delete=models.CASCADE)
