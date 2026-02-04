@@ -5,15 +5,13 @@ A Peer-to-Peer Book Sharing & Selling Platform
 BookBee is a web-based platform designed to connect book lovers. It allows users to lend, rent, or sell their pre-loved books to others in their community. With features like location-based search, real-time chat, and a trust score system, BookBee makes sharing knowledge easy and secure.
 
 ## ✨ Key Features
-* **User Authentication:** Secure Sign Up, Login, and Profile Management with email activation.
-* **Lend or Sell:** Users can list books for rent (with a per-2-weeks price) or for sale.
-* **Smart Search:** Find books by Title, Genre, or Location (City).
-* **Location Detection:** Automatically detects user city for easier listing.
-* **Shopping Cart:** Add multiple books to a cart and proceed to checkout.
-* **Real-time Chat:** Integrated messaging system to discuss book details before transacting.
-* **Trust Score:** "User Credit" system to build trust between buyers and sellers.
-* **Responsive Design:** Works on desktop and mobile devices.
-
+* **Secure Authentication:** Robust user management with email verification and profile customization.
+* **P2P Marketplace:** Facilitates lending (rent/2-weeks) and selling of books with automated price calculation.
+* **Geolocation Services:** Auto-detects user city to filter listings, ensuring relevant local search results.
+* **Real-Time Communication:** Built-in chat system allowing buyers and sellers to negotiate securely before transacting.
+* **Trust & Credit System:** Implemented a "User Credit" score to gamify reliability and foster community trust.
+* **Dynamic Cart System:** Full-featured shopping cart with checkout capabilities.
+  
 ## 🛠️ Technology Stack
 * **Backend:** Django (Python)
 * **Frontend:** HTML5, CSS3, JavaScript
